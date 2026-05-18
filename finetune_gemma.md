@@ -1,105 +1,219 @@
-# TÀI LIỆU KỸ THUẬT: FINE-TUNING GEMMA-4-E4B-IT CHO TÁC VỤ CODE DEBUGGING
+# TÀI LIỆU KỸ THUẬT: FINE-TUNING GEMMA CHO CODE DEBUGGING & AI MENTOR
 
-> **Mục tiêu:** Tinh chỉnh (Fine-tune) mô hình `google/gemma-4-E4B-it` bằng phương pháp QLoRA để phục vụ chuyên sâu cho các bài toán phát hiện, phân loại và sửa lỗi mã nguồn (Code Debugging).
-> 
-> **Benchmark System:** Dựa trên tiêu chuẩn đánh giá của DebugEval (Task 1, 2, 3, 4) và khung luận lý của framework COAST.
+**Dự án:** CodeMentor AI  
+**Phiên bản:** 1.1.0  
+**Mục tiêu:** định nghĩa vai trò của mô hình fine-tune trong hệ thống, pipeline huấn luyện/evaluation và cách kiểm soát rủi ro khi đưa model vào AI Mentor.
 
 ---
 
-## 1. TỔNG QUAN HỆ THỐNG & CÁC TÁC VỤ (TASKS)
+## 1. Vai trò của mô hình fine-tune
 
-Hệ thống được thiết kế để đánh giá năng lực "Sư phạm lập trình" và "Gỡ lỗi" của mô hình Gemma thông qua bộ dữ liệu DebugEval. 
+Mô hình fine-tune không nên được dùng như chatbot duy nhất cho toàn hệ thống. Trong kiến trúc CodeMentor AI, model fine-tune phù hợp nhất cho các tác vụ chuyên môn hẹp:
 
-### Các tác vụ lõi:
+- Phân loại lỗi lập trình.
+- Định vị vùng code nghi ngờ.
+- Sinh phân tích root cause nội bộ.
+- Đánh giá lời giải thích của sinh viên trong Reverse Teaching.
+- Gợi ý test case hoặc misconception khi tạo bài tập nháp.
 
-| Task | Tên tác vụ | Loại bài toán | Mục tiêu của Model | Metric |
+Các tác vụ cần tính an toàn, quyền dữ liệu và truy vấn database vẫn phải đi qua LangGraph workflow, guardrail và backend policy.
+
+---
+
+## 2. Tác vụ huấn luyện
+
+| Task | Tên | Input | Output | Metric |
 | :--- | :--- | :--- | :--- | :--- |
-| **Task 1** | **BUG Localization** | Multiple-choice | Đọc code lỗi, chỉ ra chính xác dòng/đoạn code gây lỗi (A, B, C, D). | Accuracy |
-| **Task 2** | **BUG Identification** | Multiple-choice | Phân loại lỗi (Syntax, Reference, Logical, Multiple). | Accuracy |
-| **Task 3** | **Code Repair** | Generation | Viết lại code hoàn chỉnh để sửa lỗi. Đánh giá bằng việc chạy test cases thực tế. | Pass@1 |
-| **Task 4** | **Code Recognition** | Binary-choice | Đọc 2 đoạn code (1 đúng, 1 sai), chỉ ra đoạn nào sai. Phải đúng cả chiều xuôi và ngược. | Accuracy (Joint) |
+| T1 | Bug Localization | Đề bài, code lỗi, log/test fail | Dòng/vùng nghi ngờ | Accuracy/F1 |
+| T2 | Bug Identification | Code lỗi, log | Loại lỗi và concept tag | Accuracy/F1 |
+| T3 | Root Cause Explanation | Code lỗi, failed test | JSON root cause nội bộ | Human/LLM-as-judge + schema validity |
+| T4 | Safe Hint Generation | Root cause, hint level | Gợi ý không lộ lời giải | Policy pass rate + helpfulness |
+| T5 | Reverse Explanation Scoring | Câu hỏi, câu trả lời sinh viên, rubric | Điểm rubric JSON | Correlation với human score |
+| T6 | Exercise Draft Support | Chủ đề, độ khó | Draft đề/test/rubric | Teacher approval rate |
+
+Lưu ý: nếu dùng benchmark như DebugEval hoặc COAST, cần ghi rõ version dataset, split, ngày chạy, script evaluation và commit hash. Các kết quả trong tài liệu chỉ có giá trị khi có artifact tái lập.
 
 ---
 
-## 2. KIẾN TRÚC FINE-TUNING (TRAINING PIPELINE)
+## 3. Dữ liệu huấn luyện
 
-Việc fine-tune dòng mô hình Gemma 4 đòi hỏi một số kỹ thuật can thiệp sâu (Monkey Patching) vào cấu trúc mạng nơ-ron để tương thích với thư viện PEFT.
+### 3.1. Nguồn dữ liệu
 
-### 2.1. Giải quyết Xung đột Kiến trúc Gemma
-Trong file training, chúng ta áp dụng 2 bản vá (patch) cốt lõi trước khi load mô hình:
-1. **Patch `set_submodule`:** Khắc phục lỗi thiếu hàm chuẩn trong `torch.nn.Module` khi thư viện PEFT cố gắng tiêm (inject) adapter LoRA vào mô hình.
-2. **Bóc vỏ `Gemma4ClippableLinear`:** Chuyển đổi các layer Linear đặc thù của kiến trúc Gemma 4 về dạng `nn.Linear` tiêu chuẩn để LoRA có thể "móc" vào các target modules một cách trơn tru.
+- Public benchmark về code debugging.
+- Submission lỗi đã được ẩn danh.
+- Chat mentor đã được giảng viên/TA review.
+- Bài tập và rubric do giảng viên tạo.
+- Reverse Teaching sessions đã được chấm.
 
-### 2.2. Cấu hình QLoRA & Tối ưu Bộ nhớ
-Hệ thống sử dụng cấu hình tối ưu nhất cho phần cứng hạn chế VRAM:
-* **Quantization 4-bit (BitsAndBytes):** Dùng định dạng `nf4` và tính toán bằng `bfloat16`. Bỏ qua lượng tử hóa ở các module ngoại vi (`vision_tower`, `audio_tower`, `lm_head`).
-* **LoRA Target Modules:** Tiêm diện rộng vào toàn bộ các ma trận tuyến tính `["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]` với Rank `r=16` và `alpha=32`.
-* **Memory Hacks:** 
-  * Bật biến môi trường `PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"` để chống phân mảnh VRAM.
-  * Kích hoạt `gradient_checkpointing=True` để đánh đổi tốc độ tính toán lấy không gian VRAM.
+### 3.2. Quy tắc dữ liệu
 
-### 2.3. Cấu trúc Dữ liệu Đầu vào (Data Processing)
-Gemma là mô hình Instruction-tuned, do đó dữ liệu DebugEval được chuyển đổi qua hàm `apply_chat_template` để giữ đúng format hội thoại chuẩn của mô hình:
-* **Input (Instruction):** Đề bài + Mã nguồn chứa lỗi.
-* **Label (Output):** Khớp chính xác với đáp án mong đợi, bắt buộc kết thúc bằng special token `<end_of_turn>`.
+- Ẩn danh `student_id`, email, tên riêng.
+- Không đưa hidden test case nhạy cảm vào dữ liệu sinh hint trực tiếp nếu có nguy cơ lộ.
+- Tách dữ liệu dùng để phân tích nội bộ và dữ liệu dùng để sinh phản hồi cho sinh viên.
+- Gắn nhãn policy violation cho các mẫu "đưa lời giải quá mức".
 
----
+### 3.3. Format mẫu cho root cause
 
-## 3. CHIẾN LƯỢC PROMPT & ĐÁNH GIÁ (EVALUATION PIPELINE)
-
-Để đánh giá chính xác độ hiệu quả của việc fine-tune, hệ thống Inference được thiết kế với tiêu chí **Strict Roleplay (Ép khuôn định dạng)** để chống hiện tượng mô hình "lải nhải" (hallucination/yapping).
-
-### 3.1. Kỹ thuật Prompting
-Thay vì dùng cấu trúc Zero-shot thông thường, Prompt được thiết kế cực kỳ gắt gao. Ví dụ với Task 1 & 2:
-
-```text
-CRITICAL INSTRUCTIONS:
-1. DO NOT explain your reasoning.
-2. DO NOT output any words, greetings, or analysis.
-3. Your entire response MUST consist of exactly ONE tag.
-Example of VALID output: <Answer>(A)</Answer>
+```json
+{
+  "instruction": "Analyze the student's code and failed tests. Return JSON only.",
+  "input": {
+    "assignment_summary": "Compute factorial of n.",
+    "student_code": "...",
+    "failed_tests": [
+      {
+        "input": "5",
+        "expected": "120",
+        "actual": "0"
+      }
+    ],
+    "error_log": ""
+  },
+  "output": {
+    "error_type": "wrong_answer",
+    "root_cause": "accumulator initialized to 0 for multiplication",
+    "concept_tags": ["loops", "accumulator"],
+    "suspicious_lines": [3],
+    "confidence": 0.86
+  }
+}
 ```
-*Lưu ý: Việc bọc đáp án trong thẻ `<Answer>...</Answer>` giúp hàm Post-processing dùng Regex bóc tách kết quả dễ dàng và đạt tỷ lệ chính xác cao nhất về mặt định dạng.*
 
-### 3.2. Tối ưu Hyper-parameters khi Inference
-Để tối đa hóa tính ổn định (Determinism) trong các bài toán đánh giá:
-* **`temperature = 0.2`:** Hạ cực thấp để triệt tiêu tính sáng tạo vô ý.
-* **`max_new_tokens = 50`:** Rất ngắn, vì model chỉ được phép xuất ra thẻ `<Answer>` (áp dụng cho Task 1, 2, 4).
-* **Early Stopping:** Bổ sung ID của `<end_of_turn>` vào danh sách `eos_token_id` để mô hình lập tức dừng sinh text ngay khi hoàn thành đáp án.
+### 3.4. Format mẫu cho safe hint
 
-### 3.3. Phương pháp Tính điểm (Metrics)
+```json
+{
+  "instruction": "Generate a Socratic hint without revealing the solution.",
+  "input": {
+    "root_cause": "accumulator initialized incorrectly",
+    "hint_level": 2,
+    "student_profile": {
+      "independence_score": 0.72,
+      "common_pitfalls": ["wrong_accumulator_initialization"]
+    }
+  },
+  "output": {
+    "message": "Bạn thử tự hỏi: với phép nhân lặp lại, giá trị ban đầu nên là phần tử trung hòa nào?",
+    "policy_tags": ["no_solution", "concept_probe"]
+  }
+}
+```
 
-| Task | Tiêu chuẩn đánh giá (Điều kiện đúng) |
+---
+
+## 4. Pipeline fine-tune
+
+### 4.1. Training approach
+
+- Dùng SFT cho structured outputs và safe hint style.
+- Dùng QLoRA nếu phần cứng hạn chế.
+- Tách adapter theo tác vụ nếu dữ liệu khác biệt lớn:
+  - `debug_analyzer_adapter`
+  - `safe_hint_adapter`
+  - `reverse_scoring_adapter`
+- Không trộn dữ liệu code repair trực tiếp với dữ liệu mentor nếu output repair làm tăng nguy cơ model đưa lời giải.
+
+### 4.2. Cấu hình QLoRA tham khảo
+
+| Tham số | Giá trị khởi điểm |
 | :--- | :--- |
-| **Task 1 & 2** | Chuỗi đáp án model sinh ra có chứa Option gốc (A, B, C, D) **VÀ** model không in ra nhiều hơn 1 Option (kiểm tra chặt chẽ bằng hàm `is_single_answer`). |
-| **Task 3** | Tính điểm **Pass@1**. Mô hình sinh ra code sửa lỗi, code này được đưa vào Sandbox Online Judge (OJ) để chạy các private test cases. Trả về AC (Accept) toàn bộ test case mới được tính là Pass. |
-| **Task 4** | Model phải chọn đúng code lỗi trong bài test xuôi (Code-A là lỗi) **VÀ** bài test ngược (Code-B là lỗi). Tính năng chấm 2 chiều này giúp loại bỏ hoàn toàn khả năng mô hình đoán mò theo vị trí (bias). |
+| Quantization | 4-bit NF4 |
+| Compute dtype | bfloat16 nếu GPU hỗ trợ |
+| LoRA rank | 16 hoặc 32 |
+| LoRA alpha | 32 hoặc 64 |
+| Target modules | q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj |
+| Learning rate | 1e-4 đến 2e-4 |
+| Epochs | 2-4, tùy overfit |
+| Max sequence length | Theo độ dài code/log thực tế |
+
+### 4.3. Validation trong training
+
+- Schema validity: output JSON parse được.
+- Policy validity: không chứa lời giải hoàn chỉnh khi task là hint.
+- Task accuracy: phân loại/định vị đúng.
+- Regression set: các ca prompt injection và yêu cầu "cho đáp án".
 
 ---
 
-## 4. KẾT QUẢ ĐÁNH GIÁ (EVALUATION RESULTS)
+## 5. Evaluation
 
-Sau khi hoàn tất quá trình Fine-tuning, mô hình được đưa vào Inference để đánh giá bộ test và so sánh trực tiếp với kiến trúc gốc chưa qua tinh chỉnh (Baseline). 
+### 5.1. Bộ chỉ số bắt buộc
 
-Dưới đây là bảng tổng hợp kết quả (Model Comparison Summary):
+| Nhóm | Metric | Ngưỡng mong muốn trước production |
+| :--- | :--- | :--- |
+| Structured output | JSON validity | > 98% |
+| Debug | Root cause accuracy | > baseline ít nhất 10% |
+| Hint safety | No-code policy pass | > 99% |
+| Hint usefulness | Teacher/TA rating | >= 4/5 trên sample |
+| Reverse Teaching | Rubric correlation | >= 0.7 với human score |
+| Robustness | Prompt injection pass | > 98% |
 
-| Tác vụ (Task) | Baseline (Gemma gốc) | LoRA (Đã Fine-tune) | Độ cải thiện (Gain) | Metric |
-| :--- | :--- | :--- | :--- | :--- |
-| **Task 1: BUG Localization** | 65.40% | **79.30%** | 🟢 +13.90% | Accuracy |
-| **Task 2: BUG Identification** | 46.90% | **61.02%** | 🟢 +14.12% | Accuracy |
-| **Task 3: Code Repair** | 30.90% | **55.02%** | 🔥 **+24.12%** | Pass@1 |
-| **Task 4: Code Recognition** | 73.04% | **87.54%** | 🟢 +14.50% | Accuracy |
+### 5.2. Human review
 
-### Phân tích kết quả:
-* **Tuân thủ định dạng xuất sắc:** Ở các tác vụ trắc nghiệm (Task 1, 2, 4), mô hình LoRA tăng trung bình ~14% độ chính xác. Điều này chứng minh mô hình đã học được cách định vị lỗi code và tuân thủ chặt chẽ yêu cầu xuất ra định dạng thẻ `<Answer>` mà không bị ảo giác sinh chữ thừa.
-* **Sự bứt phá ở Task 3 (Code Repair):** Task khó nhất đòi hỏi mô hình phải thực sự sinh ra code chạy được (Executable Code) đã ghi nhận mức tăng kỷ lục hơn **24%**. Điều này khẳng định chiến lược fine-tune bằng tập dữ liệu gỡ lỗi chất lượng cao có tác động cực kỳ mạnh mẽ đến khả năng tư duy logic và sửa lỗi lập trình của mô hình Gemma-4-E4B.
+Mỗi version model cần review thủ công ít nhất:
+
+- 50 phản hồi hint.
+- 30 phân tích root cause.
+- 30 bài Reverse Teaching scoring.
+- 20 draft bài tập/test case.
+- 20 ca adversarial/prompt injection.
+
+### 5.3. Báo cáo kết quả
+
+Mỗi lần chạy evaluation cần lưu:
+
+- Model base và adapter version.
+- Dataset version.
+- Script/commit hash.
+- Hardware/runtime.
+- Bảng metric.
+- Sample lỗi nghiêm trọng.
+- Quyết định: promote, hold, rollback.
 
 ---
 
-## 5. KẾT LUẬN VÀ BƯỚC TIẾP THEO
+## 6. Tích hợp vào LangGraph
 
-Việc tinh chỉnh thành công mô hình Gemma-4-E4B-it bằng phương pháp QLoRA đã mang lại một công cụ Code Debugging mạnh mẽ, tối ưu hóa rất tốt cho môi trường phần cứng hạn chế (VRAM thấp).
+### 6.1. Model routing
 
-**Hướng đi tiếp theo:**
-1. Triển khai mô hình LoRA này vào các pipeline thực tế (ví dụ: làm engine cốt lõi cho AI Mentor hoặc Code Review Assistant).
-2. Tích hợp sâu hơn cơ chế **Chain-of-Thought (CoT)** vào dữ liệu huấn luyện để phân tích xem liệu có thể đẩy điểm Pass@1 của Task 3 vượt ngưỡng 65% hay không.
+| Workflow | Model đề xuất | Lý do |
+| :--- | :--- | :--- |
+| `analyze_error` | fine-tune debug analyzer | Cần hiểu code/log. |
+| `generate_hint` | general LLM + guardrail hoặc safe-hint adapter | Cần tone sư phạm và an toàn. |
+| `teacher_insight` | general LLM | Cần tổng hợp dữ liệu/evidence. |
+| `exercise_draft` | general LLM + validation | Cần sáng tạo có kiểm soát. |
+| `reverse_scoring` | reverse scoring adapter hoặc general LLM rubric | Cần đánh giá lời giải thích. |
+
+### 6.2. Không dùng model fine-tune để bypass policy
+
+Ngay cả khi model fine-tune trả lời tốt, output vẫn phải đi qua:
+
+- Schema validator.
+- No-code leakage guard.
+- Privacy guard.
+- Audit log.
+- Fallback nếu confidence thấp.
+
+---
+
+## 7. Rủi ro và biện pháp
+
+| Rủi ro | Biện pháp |
+| :--- | :--- |
+| Model học cách sửa code hoàn chỉnh rồi lộ lời giải | Tách adapter repair và mentor; guardrail output. |
+| Dataset chứa thông tin cá nhân | Anonymization pipeline và review sample. |
+| Overfit benchmark | Giữ test set nội bộ theo bài tập thật. |
+| JSON không ổn định | Constrained decoding hoặc repair parser có giới hạn. |
+| Scoring Reverse Teaching thiên lệch | Human calibration, rubric rõ, sample review. |
+| Chi phí inference cao | Routing chỉ dùng fine-tune ở node cần thiết. |
+
+---
+
+## 8. Bước tiếp theo
+
+1. Xác định base model thật sự được dùng và version chính xác.
+2. Chuẩn hóa dataset schema cho 6 task.
+3. Viết evaluation harness có thể chạy lại.
+4. Tạo bộ adversarial tests cho no-code leakage.
+5. Chạy baseline trước khi fine-tune.
+6. Chỉ đưa model vào production sau khi có báo cáo evaluation đầy đủ.
