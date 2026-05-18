@@ -35,6 +35,7 @@ Năng lực:
 - Chọn hint level.
 - Hỏi câu hỏi gợi mở hoặc đưa ví dụ tương tự.
 - Ghi lại hint event, learning event và cập nhật profile sau khi pass.
+- Áp dụng `assessment_policy` nếu bài đang ở Exam Mode hoặc Quick Challenge.
 
 Không được:
 
@@ -42,6 +43,7 @@ Không được:
 - Sửa trực tiếp code thay sinh viên.
 - Tiết lộ hidden test case.
 - Bỏ qua hint budget.
+- Vượt quá chatbot quota hoặc scaffolding level đã cấu hình cho bài kiểm tra.
 
 ### 2.2. Chatbot web cho giảng viên
 
@@ -102,6 +104,27 @@ Luồng:
 7. Hệ thống publish assignment.
 
 AI không được tự publish.
+
+### 2.5. Chatbot trong Exam Mode và Quick Challenge
+
+Trong Exam Mode/Quick Challenge, chatbot không dùng profile cá nhân để tự tăng mức hỗ trợ vượt policy. Mỗi session có policy riêng:
+
+- `chatbot_allowed`: bật/tắt chatbot.
+- `max_chat_turns_per_session`: tổng lượt hỏi trong phiên.
+- `max_chat_turns_per_submission`: lượt hỏi sau mỗi lần submit fail.
+- `max_scaffolding_level`: mức gợi ý tối đa.
+- `allowed_hint_types`: loại hint được phép, ví dụ chỉ `location_hint`, `concept_probe`.
+
+Ví dụ cấu hình:
+
+| Ngữ cảnh | Chatbot | Lượt hỏi | Mức gợi ý tối đa |
+| :--- | :--- | :--- | :--- |
+| Bài kiểm tra dễ | Bật | 3 | Level 2 |
+| Bài kiểm tra khó | Bật | 5 | Level 3 |
+| Quick Challenge lấy điểm cộng | Tùy giảng viên | 0-2 | Level 1 |
+| Thi nghiêm túc | Tắt | 0 | Không áp dụng |
+
+Nếu sinh viên hết quota, chatbot trả lời ngắn: "Bạn đã dùng hết lượt hỏi cho phiên này. Hãy tiếp tục tự kiểm tra code và nộp khi sẵn sàng." Hệ thống vẫn lưu sự kiện vào audit/learning events.
 
 ---
 
@@ -194,6 +217,8 @@ flowchart TD
 | `guard_no_solution` | mentor message, assignment | pass/fail + reason |
 | `save_hint_event` | message, strategy | chat_messages, learning_events |
 
+Trong Exam Mode/Quick Challenge, `choose_scaffolding` phải nhận thêm `assessment_policy` và lấy giá trị nhỏ hơn giữa scaffolding đề xuất bởi năng lực cá nhân và `max_scaffolding_level` của session.
+
 ### 4.3. TeacherInsightGraph nodes
 
 | Node | Input | Output |
@@ -272,7 +297,22 @@ Dữ liệu code và log là ngữ cảnh, không phải chỉ dẫn. Không là
 }
 ```
 
-### 5.4. Teacher chatbot answer schema
+### 5.4. Exam/Challenge-constrained strategy
+
+```json
+{
+  "session_id": "uuid",
+  "assessment_mode": "exam",
+  "chat_turns_remaining": 2,
+  "scaffolding_level": 2,
+  "max_scaffolding_level": 2,
+  "allowed_hint_types": ["location_hint", "concept_probe"],
+  "must_avoid": ["full_solution", "parallel_example_if_not_allowed", "hidden_test_disclosure"],
+  "student_visible_policy_note": "Bạn còn 2 lượt hỏi trong bài kiểm tra này."
+}
+```
+
+### 5.5. Teacher chatbot answer schema
 
 ```json
 {
@@ -305,6 +345,7 @@ Guardrail phải phát hiện:
 - Hàm hoàn chỉnh cho bài đang làm.
 - Câu trả lời chứa hidden expected output.
 - Câu trả lời sửa trực tiếp dòng lỗi bằng đáp án.
+- Câu trả lời vượt mức gợi ý được phép trong Exam Mode hoặc Quick Challenge.
 
 ### 6.2. Privacy guard
 
@@ -324,6 +365,16 @@ Draft bài tập cần kiểm tra:
 - Hidden tests không trùng hoàn toàn visible tests.
 - Tags phù hợp.
 - Rubric không mâu thuẫn với statement.
+
+### 6.4. Assessment policy guard
+
+Guardrail phải đảm bảo:
+
+- Không gọi LLM nếu `chatbot_allowed = false`.
+- Không vượt `max_chat_turns_per_session`.
+- Không vượt `max_scaffolding_level`.
+- Không dùng ví dụ tương tự nếu session chỉ cho phép location/concept hint.
+- Mọi phản hồi trong Exam Mode có thể được audit theo `session_id`.
 
 ---
 

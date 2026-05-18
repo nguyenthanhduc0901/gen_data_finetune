@@ -30,11 +30,14 @@ flowchart TD
     Teacher --> TStudents["Students"]
     Teacher --> TAssignments["Assignments"]
     Teacher --> TDrafts["AI Drafts"]
+    Teacher --> TExam["Exam Mode"]
+    Teacher --> TChallenge["Quick Challenge"]
     Teacher --> TChat["Teacher Chatbot"]
     Teacher --> TReports["Reports"]
 
     Student --> SDashboard["My Learning"]
     Student --> SAssignments["Assignments"]
+    Student --> SExam["Exam / Challenge"]
     Student --> SReflection["Reflection History"]
     Student --> SChat["Student Chatbot"]
 
@@ -85,6 +88,10 @@ Không dùng palette một màu. Gợi ý role:
 - Assignment editor.
 - Test case editor.
 - Rubric editor.
+- Assessment policy editor.
+- Countdown timer.
+- Integrity event timeline.
+- Live leaderboard.
 - Approval banner.
 - Empty state.
 - Error state.
@@ -115,6 +122,8 @@ Sidebar items:
 - Overview
 - Students
 - Assignments
+- Exam Mode
+- Quick Challenges
 - AI Drafts
 - Reverse Teaching
 - Reports
@@ -250,6 +259,13 @@ Fields:
 - Hidden tests.
 - Rubric.
 - Hint policy.
+- Assessment policy:
+  - chatbot allowed.
+  - max chat turns.
+  - max scaffolding level.
+  - paste policy.
+  - focus monitoring.
+  - max submissions.
 - Deadline.
 
 Validation:
@@ -259,6 +275,8 @@ Validation:
 - Hidden tests missing.
 - Rubric total mismatch.
 - Hint policy too permissive.
+- Exam Mode thiếu thời gian mở/đóng.
+- Quick Challenge thiếu scoring policy.
 
 ### 4.6. AI Draft Review
 
@@ -314,6 +332,98 @@ Evidence drawer:
 - Assignment refs.
 - Student group refs.
 - Snapshot timestamp.
+
+### 4.8. Exam Mode Setup
+
+Mục tiêu: giảng viên biến một assignment thành bài kiểm tra có policy rõ ràng.
+
+Sections:
+
+1. **Session basics**
+   - Assignment.
+   - Class.
+   - Title.
+   - Starts at / Ends at.
+   - Duration.
+
+2. **Chatbot policy**
+   - Toggle: allow chatbot.
+   - Max turns per session.
+   - Max turns per submission.
+   - Max scaffolding level.
+   - Allowed hint types.
+
+3. **Integrity policy**
+   - Paste mode: allow / log only / log and warn.
+   - Max paste chars.
+   - Monitor focus loss.
+   - Warn after seconds.
+   - Critical after count.
+
+4. **Submission policy**
+   - Max submissions.
+   - Late submission handling.
+   - Show public feedback during exam or after exam.
+
+5. **Preview**
+   - Student-facing exam banner.
+   - Chatbot quota display.
+   - Integrity notice.
+
+Primary actions:
+
+- Save Scheduled Exam.
+- Launch Now.
+- Cancel Session.
+
+### 4.9. Exam Results & Integrity Dashboard
+
+Sections:
+
+- Result table: Student, Status, Score, Attempts, Chat Turns, Integrity Flags.
+- Integrity timeline by student.
+- Filters: warning/critical, paste, focus lost, late submit.
+- Submission drawer.
+- Export report.
+
+Important copy:
+
+- UI dùng chữ "Integrity signals" thay vì "Cheating" để tránh kết luận tự động.
+- Mỗi signal có timestamp và payload tóm tắt.
+
+### 4.10. Quick Challenge Launcher
+
+Mục tiêu: giảng viên phát bài tập nhanh trong lớp.
+
+Layout:
+
+```text
++--------------------------------------------------+
+| Select Assignment / Generate Quick Draft          |
+| Duration | Chatbot quota | Scoring policy         |
+| Preview student alert                             |
+| Launch Challenge                                  |
++--------------------------------------------------+
+```
+
+Fields:
+
+- Assignment source: existing / AI quick draft.
+- Duration minutes.
+- Chatbot allowed.
+- Max chat turns.
+- Leaderboard visibility.
+- Bonus points by rank.
+- Tie-breakers.
+
+Live view:
+
+- Countdown.
+- Participants joined.
+- Accepted count.
+- Leaderboard.
+- Event feed.
+- End Challenge button.
 
 ---
 
@@ -406,6 +516,22 @@ For Reverse Teaching:
 - Rubric progress.
 - Transcript after completion.
 
+For Exam Mode:
+
+- Exam banner.
+- Starts/ends time.
+- Chatbot quota.
+- Integrity notice.
+- Open in VS Code button.
+- Submission status.
+
+For Quick Challenge:
+
+- Live/ended badge.
+- Countdown.
+- Rank and bonus points if visible.
+- Accepted time.
+
 ---
 
 ## 6. VS Code Extension
@@ -416,6 +542,7 @@ For Reverse Teaching:
 - Sidebar Tree View: Classes and Assignments.
 - WebView Panel: Assignment detail and Mentor chat.
 - Status Bar item: selected assignment and submission status.
+- Realtime alert surface for Exam Mode and Quick Challenge.
 - Command Palette commands.
 
 Commands:
@@ -426,6 +553,8 @@ Commands:
 - `CodeMentor: Submit Current File`
 - `CodeMentor: Ask Mentor`
 - `CodeMentor: Open Dashboard`
+- `CodeMentor: Start Exam Session`
+- `CodeMentor: Start Quick Challenge`
 
 ### 6.2. Sidebar structure
 
@@ -436,6 +565,9 @@ CodeMentor
       [!] Tổng số chẵn
     In Progress
       [~] Mảng một chiều
+    Live Now
+      [Live] Quick Challenge: Tìm số lớn nhất
+      [Exam] Kiểm tra vòng lặp
     Completed
       [✓] Tính giai thừa
 ```
@@ -446,6 +578,7 @@ Each assignment item shows:
 - Status icon.
 - Deadline badge.
 - Hint count if relevant.
+- Exam/challenge badge if live.
 
 ### 6.3. Assignment WebView
 
@@ -455,6 +588,7 @@ Tabs:
 - Submissions.
 - Mentor.
 - Reflection.
+- Integrity if Exam/Challenge session.
 
 Description tab:
 
@@ -475,6 +609,13 @@ Mentor tab:
 - Hint budget indicator.
 - Current scaffolding level as subtle label.
 - Input disabled when no failed submission or budget exhausted.
+- In Exam Mode, input disabled or constrained by chatbot quota and max scaffolding policy.
+
+Integrity tab:
+
+- Student-facing list of recorded signals.
+- Explanation that signals are reviewed by teacher.
+- No accusatory language.
 
 Reflection tab:
 
@@ -502,6 +643,9 @@ States:
 - Accepted.
 - Failed with mentor available.
 - Failed with mentor unavailable due to policy.
+- Exam live.
+- Quick Challenge live.
+- Integrity warning recorded.
 
 ### 6.5. VS Code UX rules
 
@@ -510,6 +654,8 @@ States:
 - Mentor panel mở cạnh editor, không che file.
 - Tất cả long-running actions có cancel/retry.
 - Error messages có trace_id khi lỗi backend.
+- Exam Mode không hứa khóa tuyệt đối OS/browser; extension hiển thị policy và ghi nhận focus/paste signals.
+- Quick Challenge alert phải rõ nhưng không phá editor nếu sinh viên đang gõ; dùng notification + sidebar live badge.
 
 ---
 
@@ -538,6 +684,8 @@ Audit table columns:
 AI Policy screen:
 
 - Hint budget default.
+- Exam/Challenge default policy.
+- Integrity signal severity mapping.
 - No-code leakage threshold.
 - Enabled workflows.
 - Model routing.
@@ -552,6 +700,7 @@ AI Policy screen:
 | Teacher Dashboard | Sidebar + charts + chat panel | Sidebar collapses | Read-only compact; heavy editing discouraged |
 | Student Dashboard | Full dashboard | Compact charts | Bottom nav, cards stacked |
 | Exercise Builder | Two-column editor | Single-column with sticky actions | Not primary; show limited editing |
+| Exam/Challenge | Full setup and live board | Setup review + live board | Student view only |
 | VS Code Extension | Native VS Code panels | Same | Not applicable |
 
 ---
@@ -600,3 +749,5 @@ AI Policy screen:
 - All major screens have empty/loading/error states.
 - All destructive/publish actions have confirmation.
 - AI answers show scope/evidence where relevant.
+- Exam Mode setup, student exam banner, integrity report and chatbot quota are visible.
+- Quick Challenge launch, VS Code alert and leaderboard flow are usable end to end.

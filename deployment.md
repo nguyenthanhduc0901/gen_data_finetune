@@ -15,6 +15,7 @@ flowchart LR
     API --> Redis[("Redis")]
     API --> Judge["Judge Worker"]
     API --> AI["AI Worker / LangGraph"]
+    API --> Realtime["Realtime Gateway"]
     AI --> LLM["LLM Provider / Gateway"]
     Judge --> Docker["Sandbox Runtime"]
     API --> Obj["Object Storage optional"]
@@ -26,6 +27,7 @@ Services:
 - `api`: auth, business API, RBAC.
 - `ai-worker`: LangGraph workflows.
 - `judge-worker`: code execution queue.
+- `realtime-gateway`: WebSocket/SSE channel for VS Code live exam/challenge notifications.
 - `postgres`: relational data.
 - `redis`: queue/cache/session ephemeral data.
 - `sandbox-runtime`: Docker/firecracker worker host.
@@ -57,6 +59,7 @@ LLM_PROVIDER=
 LLM_API_KEY=
 AI_MODEL_DEFAULT=
 JUDGE_QUEUE_NAME=
+REALTIME_CHANNEL_BACKEND=
 SANDBOX_NETWORK_DISABLED=true
 AUDIT_LOG_RETENTION_DAYS=180
 ```
@@ -143,6 +146,7 @@ Judge logs:
 ### Alerts
 
 - Judge queue stuck.
+- Realtime gateway disconnected for active assessment sessions.
 - AI error rate high.
 - DB unavailable.
 - Guardrail critical violation.
@@ -175,6 +179,7 @@ RPO/RTO MVP:
 - Seed demo class optional.
 - LLM provider reachable.
 - Judge sandbox smoke test pass.
+- Realtime notification smoke test pass for VS Code Extension.
 - AI guardrail regression pass.
 - Web health check pass.
 - Extension points to correct API base URL.

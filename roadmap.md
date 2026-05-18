@@ -16,6 +16,8 @@ Roadmap này không định nghĩa MVP như một bản thiếu tính năng. MVP
 - Chatbot web cho sinh viên.
 - AI Exercise Drafting có review/approve.
 - Reverse Teaching Exercise.
+- Exam Mode có chatbot quota, scaffolding limit và integrity signals.
+- Quick Challenge phát bài realtime về VS Code và tính điểm cộng.
 - Analytics, guardrail, audit, security, testing và deployment.
 
 Các phase bên dưới là thứ tự triển khai nội bộ để giảm rủi ro, không phải cắt bớt phạm vi sản phẩm.
@@ -205,7 +207,31 @@ Exit criteria:
 
 ---
 
-## 10. Milestone 8: Hardening & Pilot
+## 10. Milestone 8: Exam Mode & Quick Challenge
+
+Mục tiêu: hỗ trợ kiểm tra có policy rõ ràng và hoạt động bài tập nhanh trên lớp.
+
+Scope:
+
+- Assessment Runtime.
+- `assessment_sessions`, `assessment_participants`, `integrity_events`.
+- Exam Mode setup UI.
+- VS Code exam banner, countdown, chatbot quota.
+- Integrity event ingestion.
+- Quick Challenge launcher.
+- Realtime notification to VS Code Extension.
+- Live leaderboard and bonus points finalization.
+
+Exit criteria:
+
+- Teacher tạo và launch exam session.
+- Student làm bài trong VS Code với policy hiển thị rõ.
+- Chatbot quota/max scaffolding không bị bypass.
+- Teacher launch quick challenge và leaderboard finalize đúng.
+
+---
+
+## 11. Milestone 9: Hardening & Pilot
 
 Mục tiêu: đưa MVP vào pilot an toàn.
 
@@ -228,7 +254,7 @@ Exit criteria:
 
 ---
 
-## 11. Post-MVP growth
+## 12. Post-MVP growth
 
 Sau pilot, các hướng mở rộng:
 
@@ -238,10 +264,11 @@ Sau pilot, các hướng mở rộng:
 - Parent/department-level reporting nếu cần.
 - A/B testing scaffolding strategies.
 - Advanced recommendation engine.
+- Lockdown browser/native proctoring integration nếu tổ chức cần giám sát thi nghiêm ngặt hơn proctoring-lite.
 
 ---
 
-## 12. Rủi ro và cách giảm thiểu
+## 13. Rủi ro và cách giảm thiểu
 
 | Rủi ro | Ảnh hưởng | Giảm thiểu |
 | :--- | :--- | :--- |
@@ -252,3 +279,5 @@ Sau pilot, các hướng mở rộng:
 | Chatbot trả lời không evidence | Cao | Analytics snapshot, answer schema, evidence drawer. |
 | AI draft sai test | Trung bình | Validation report, teacher approval, test preview. |
 | Pilot quá tải vận hành | Trung bình | Monitoring, runbook, rollback, seed scripts. |
+| Exam Mode bị hiểu là khóa tuyệt đối thiết bị | Cao | Tài liệu và UI dùng wording proctoring-lite, chỉ ghi nhận integrity signals trong phạm vi kỹ thuật cho phép. |
+| Quick Challenge notification chậm | Trung bình | Realtime gateway, retry, fallback polling trong extension. |

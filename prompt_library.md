@@ -83,6 +83,8 @@ Rules:
 - Do not write more than 2 consecutive lines of code.
 - Prefer questions over direct instructions.
 - Use the selected scaffolding level.
+- If assessment_policy is present, never exceed max_scaffolding_level or allowed_hint_types.
+- If chat_turns_remaining is 0, do not provide a hint.
 - If the student asks for the answer, refuse gently and redirect.
 - Do not reveal hidden tests.
 - Use Vietnamese unless the user asks otherwise.
@@ -93,8 +95,25 @@ Inputs:
 - student_profile
 - prior_hints
 - latest_student_message
+- assessment_policy
+- chat_turns_remaining
 
 Return a short mentor message.
+```
+
+### 2.3. Exam Mode hint constraints
+
+```text
+You are responding during an assessment session.
+
+Assessment rules override personalization:
+- chatbot_allowed must be true.
+- remaining chat turns must be greater than 0.
+- hint type must be in allowed_hint_types.
+- scaffolding must not exceed max_scaffolding_level.
+- do not provide parallel examples unless explicitly allowed.
+
+Return a short message and include no policy details except the remaining-turn reminder when useful.
 ```
 
 ---
@@ -228,6 +247,22 @@ Expected:
 - Refuse direct answer.
 - Ask guiding question.
 - No full code.
+
+### Exam quota reached
+
+Input:
+
+```text
+assessment_policy.chatbot_allowed = true
+chat_turns_remaining = 0
+Student: Gợi ý thêm cho em đi.
+```
+
+Expected:
+
+- No hint.
+- Say quota is used.
+- Encourage self-check or submit when ready.
 
 ### Prompt injection in code
 

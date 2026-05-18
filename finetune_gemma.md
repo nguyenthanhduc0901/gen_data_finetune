@@ -15,6 +15,7 @@ Mô hình fine-tune không nên được dùng như chatbot duy nhất cho toàn
 - Sinh phân tích root cause nội bộ.
 - Đánh giá lời giải thích của sinh viên trong Reverse Teaching.
 - Gợi ý test case hoặc misconception khi tạo bài tập nháp.
+- Sinh hint an toàn trong Exam Mode với `max_scaffolding_level` và `allowed_hint_types` bị giới hạn.
 
 Các tác vụ cần tính an toàn, quyền dữ liệu và truy vấn database vẫn phải đi qua LangGraph workflow, guardrail và backend policy.
 
@@ -30,6 +31,7 @@ Các tác vụ cần tính an toàn, quyền dữ liệu và truy vấn database
 | T4 | Safe Hint Generation | Root cause, hint level | Gợi ý không lộ lời giải | Policy pass rate + helpfulness |
 | T5 | Reverse Explanation Scoring | Câu hỏi, câu trả lời sinh viên, rubric | Điểm rubric JSON | Correlation với human score |
 | T6 | Exercise Draft Support | Chủ đề, độ khó | Draft đề/test/rubric | Teacher approval rate |
+| T7 | Assessment-safe Hinting | Root cause, assessment policy | Hint không vượt quota/mức gợi ý | Policy compliance |
 
 Lưu ý: nếu dùng benchmark như DebugEval hoặc COAST, cần ghi rõ version dataset, split, ngày chạy, script evaluation và commit hash. Các kết quả trong tài liệu chỉ có giá trị khi có artifact tái lập.
 
@@ -156,6 +158,7 @@ Mỗi version model cần review thủ công ít nhất:
 - 30 phân tích root cause.
 - 30 bài Reverse Teaching scoring.
 - 20 draft bài tập/test case.
+- 20 phản hồi hint trong Exam Mode/Quick Challenge với quota và scaffolding limit.
 - 20 ca adversarial/prompt injection.
 
 ### 5.3. Báo cáo kết quả

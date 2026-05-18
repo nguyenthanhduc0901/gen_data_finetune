@@ -316,7 +316,95 @@ Priority: V2
 
 ---
 
-## 7. Definition of Done
+## 7. Epic G: Exam Mode
+
+### US-G1: Cấu hình bài kiểm tra
+
+**Là** giảng viên, **tôi muốn** bật Exam Mode cho một bài code, **để** dùng bài đó làm kiểm tra có policy rõ ràng.
+
+Acceptance criteria:
+
+- Giảng viên chọn assignment và tạo exam session.
+- Cấu hình được thời gian mở/đóng, thời lượng, số lần nộp tối đa.
+- Cấu hình được `chatbot_allowed`, số lượt hỏi chatbot và `max_scaffolding_level`.
+- Cấu hình được paste policy và focus monitoring.
+- Sinh viên thấy rõ policy trước khi bắt đầu.
+
+Priority: MVP
+
+### US-G2: Làm bài trong Exam Mode
+
+**Là** sinh viên, **tôi muốn** thấy rõ mình đang ở chế độ thi, **để** biết giới hạn chatbot và hành vi nào bị ghi nhận.
+
+Acceptance criteria:
+
+- VS Code Extension hiển thị exam banner và countdown.
+- Mentor tab hiển thị số lượt chatbot còn lại.
+- Nếu chatbot bị tắt, input chat disabled và giải thích lý do.
+- Paste/focus events được gửi kèm session_id.
+- Submission gắn với exam session.
+
+Priority: MVP
+
+### US-G3: Xem integrity report
+
+**Là** giảng viên, **tôi muốn** xem báo cáo integrity của bài kiểm tra, **để** đánh giá submission có tín hiệu bất thường hay không.
+
+Acceptance criteria:
+
+- Report hiển thị paste events, focus lost duration, tab/window blur signals.
+- Event có severity và timestamp.
+- Report không tự kết luận gian lận nếu policy không quy định.
+- Giảng viên có thể mở submission liên quan.
+
+Priority: MVP
+
+---
+
+## 8. Epic H: Quick Challenge
+
+### US-H1: Launch bài tập nhanh trên lớp
+
+**Là** giảng viên, **tôi muốn** giao một bài tập nhanh trong giờ học, **để** sinh viên giải ngay trên VS Code và lấy điểm cộng.
+
+Acceptance criteria:
+
+- Giảng viên chọn bài có sẵn hoặc tạo nhanh từ AI draft.
+- Cấu hình được thời lượng, chatbot allowed/quota, scoring policy.
+- Khi bấm launch, session chuyển `live`.
+- Tất cả sinh viên trong lớp nhận alert trong VS Code Extension.
+
+Priority: MVP
+
+### US-H2: Làm Quick Challenge trong VS Code
+
+**Là** sinh viên, **tôi muốn** nhận bài tập nhanh ngay trong extension, **để** code và nộp nhanh trong giờ học.
+
+Acceptance criteria:
+
+- Extension hiển thị alert khi challenge live.
+- Có countdown và nút mở bài.
+- Submit gắn với quick challenge session.
+- Sinh viên thấy trạng thái accepted/wrong answer và rank nếu policy cho phép.
+
+Priority: MVP
+
+### US-H3: Leaderboard và điểm cộng
+
+**Là** giảng viên, **tôi muốn** xem leaderboard live, **để** biết sinh viên nào nộp đúng nhanh nhất và gán điểm cộng.
+
+Acceptance criteria:
+
+- Leaderboard cập nhật theo accepted time.
+- Tie-break theo scoring policy.
+- Có thể ẩn leaderboard với sinh viên nếu giảng viên chọn.
+- Khi kết thúc, bonus points được lưu vào participant result.
+
+Priority: MVP
+
+---
+
+## 9. Definition of Done
 
 Một tính năng được coi là xong khi:
 

@@ -31,6 +31,10 @@ Coverage bắt buộc:
 - Analytics snapshot generation.
 - Exercise draft approval.
 - Reverse teaching session scoring.
+- Assessment session create/launch/end.
+- Exam chatbot quota enforcement.
+- Quick Challenge leaderboard ranking.
+- Integrity event ingestion and privacy masking.
 
 Examples:
 
@@ -57,6 +61,8 @@ Student Web:
 - Student chatbot returns navigation action.
 - Assignment detail opens VS Code link.
 - Reverse Teaching session completes and shows score.
+- Exam status shows countdown and chatbot quota.
+- Quick Challenge alert and result status render correctly.
 
 Admin Web:
 
@@ -89,6 +95,10 @@ Critical UX checks:
 - Extension does not freeze editor during submission.
 - Error shows trace_id.
 - Mentor input disabled when no failed submission.
+- Exam banner and countdown render in assignment WebView.
+- Chat input disabled when exam policy disallows chatbot.
+- Quick Challenge live alert opens the correct assignment.
+- Integrity event send retries safely when offline.
 
 ---
 
@@ -178,6 +188,22 @@ Metrics:
 - Follow-up relevance.
 - Completion decision quality.
 
+### 6.5. Exam Mode AI policy
+
+Tests:
+
+- Chatbot disabled by session policy.
+- Max chat turns reached.
+- Max scaffolding level lower than student profile recommendation.
+- Student asks for direct answer during exam.
+- Session allows only location/concept hints.
+
+Metrics:
+
+- Policy enforcement pass rate.
+- No-code leakage pass rate in exam context.
+- Quota bypass attempt rejection rate.
+
 ---
 
 ## 7. E2E demo tests
@@ -194,6 +220,8 @@ Minimum release E2E:
 8. Teacher asks chatbot about weak tags.
 9. Teacher creates AI draft and approves.
 10. Student completes Reverse Teaching.
+11. Teacher launches Exam Mode and student uses limited chatbot.
+12. Teacher launches Quick Challenge and leaderboard finalizes.
 
 ---
 
@@ -206,5 +234,6 @@ MVP cannot release unless:
 - RBAC regression pass.
 - Sandbox security tests pass.
 - AI guardrail critical cases pass.
+- Exam/Quick Challenge policy tests pass.
 - API contract published.
 - Migration runs from empty database.

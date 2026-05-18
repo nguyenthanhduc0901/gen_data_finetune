@@ -70,12 +70,14 @@ Khóa chính gợi ý: `(class_id, user_id)`.
 | `created_by` | UUID, FK `users.id` | Người tạo. |
 | `source_draft_id` | UUID, nullable | Draft AI nếu bài được tạo từ AI. |
 | `type` | enum | `coding`, `reverse_teaching`, `quiz`, `reading_reflection`. |
+| `delivery_mode` | enum | `practice`, `homework`, `exam`, `quick_challenge`. |
 | `title` | varchar(200) | Tiêu đề. |
 | `description` | text | Đề bài markdown. |
 | `language_policy` | JSONB | Ngôn ngữ cho phép, version runtime. |
 | `knowledge_tags` | JSONB | Tags kỹ năng. |
 | `difficulty` | enum | `easy`, `medium`, `hard`. |
 | `hint_policy` | JSONB | Hint budget, max level, cooldown. |
+| `assessment_policy` | JSONB | Exam/quick challenge policy: chatbot quota, paste/focus monitoring, submit limits. |
 | `rubric` | JSONB | Rubric chấm điểm. |
 | `time_limit_ms` | int | Giới hạn thời gian chạy. |
 | `memory_limit_kb` | int | Giới hạn bộ nhớ. |
@@ -111,6 +113,44 @@ Khóa chính gợi ý: `(class_id, user_id)`.
 | `max_turns` | int | Số lượt hỏi đáp tối đa. |
 | `created_at` | timestamptz | Thời gian tạo. |
 
+### 3.4. `assessment_sessions`
+
+Lưu các phiên làm bài có thời gian và policy riêng. Một assignment có thể được dùng trong nhiều session, ví dụ cùng một bài được dùng cho hai lớp hoặc hai ca kiểm tra.
+
+| Trường | Kiểu / Ràng buộc | Mô tả |
+| :--- | :--- | :--- |
+| `id` | UUID, PK | ID phiên kiểm tra/challenge. |
+| `assignment_id` | UUID, FK `assignments.id` | Bài được dùng. |
+| `class_id` | UUID, FK `classes.id` | Lớp tham gia. |
+| `created_by` | UUID, FK `users.id` | Giảng viên tạo phiên. |
+| `session_type` | enum | `exam`, `quick_challenge`. |
+| `title` | varchar(200) | Tên hiển thị của phiên. |
+| `starts_at` | timestamptz | Thời điểm mở. |
+| `ends_at` | timestamptz | Thời điểm đóng. |
+| `duration_minutes` | int | Thời lượng làm bài nếu tính từ lúc bắt đầu. |
+| `status` | enum | `scheduled`, `live`, `ended`, `cancelled`. |
+| `assessment_policy` | JSONB | Policy override cho session. |
+| `scoring_policy` | JSONB | Rule tính điểm, điểm cộng, tie-break. |
+| `created_at` | timestamptz | Thời gian tạo. |
+| `updated_at` | timestamptz | Thời gian cập nhật. |
+
+### 3.5. `assessment_participants`
+
+| Trường | Kiểu / Ràng buộc | Mô tả |
+| :--- | :--- | :--- |
+| `session_id` | UUID, FK `assessment_sessions.id` | Phiên. |
+| `student_id` | UUID, FK `users.id` | Sinh viên. |
+| `status` | enum | `not_started`, `in_progress`, `submitted`, `accepted`, `ended`, `disqualified`. |
+| `started_at` | timestamptz | Lúc sinh viên bắt đầu. |
+| `completed_at` | timestamptz | Lúc hoàn thành. |
+| `best_submission_id` | UUID, nullable | Submission tốt nhất. |
+| `rank` | int, nullable | Thứ hạng trong quick challenge. |
+| `bonus_points` | numeric | Điểm cộng nếu có. |
+| `chat_turns_used` | int | Số lượt chatbot đã dùng trong session. |
+| `integrity_summary` | JSONB | Tổng hợp paste/focus/tab-switch signals. |
+
+Khóa chính gợi ý: `(session_id, student_id)`.
+
 ---
 
 ## 4. Submission và Judge
@@ -122,6 +162,7 @@ Khóa chính gợi ý: `(class_id, user_id)`.
 | `id` | UUID, PK | ID submission. |
 | `student_id` | UUID, FK `users.id` | Sinh viên nộp. |
 | `assignment_id` | UUID, FK `assignments.id` | Bài tập. |
+| `session_id` | UUID, nullable | Phiên exam/quick challenge nếu submission thuộc session. |
 | `source_code` | text | Code nộp. |
 | `language` | varchar(50) | Ngôn ngữ. |
 | `status` | enum | `pending`, `accepted`, `wrong_answer`, `runtime_error`, `syntax_error`, `time_limit_exceeded`, `memory_limit_exceeded`, `judge_error`. |
@@ -131,6 +172,7 @@ Khóa chính gợi ý: `(class_id, user_id)`.
 | `error_log` | text | Log lỗi tóm tắt. |
 | `judge_metadata` | JSONB | Runtime, memory, container id, failed test summary. |
 | `hints_used` | int | Số hint gắn với submission. |
+| `integrity_flags` | JSONB | Tín hiệu integrity tại thời điểm nộp. |
 | `submitted_at` | timestamptz | Thời điểm nộp. |
 | `judged_at` | timestamptz | Thời điểm chấm xong. |
 
@@ -146,6 +188,21 @@ Khóa chính gợi ý: `(class_id, user_id)`.
 | `execution_time_ms` | int | Thời gian chạy. |
 | `memory_used_kb` | int | Bộ nhớ dùng. |
 | `public_feedback` | text | Feedback hiển thị cho sinh viên. |
+
+### 4.3. `integrity_events`
+
+Ghi nhận các sự kiện trong Exam Mode và Quick Challenge. Đây là tín hiệu hỗ trợ giảng viên đánh giá, không tự động kết luận gian lận nếu không có policy rõ ràng.
+
+| Trường | Kiểu / Ràng buộc | Mô tả |
+| :--- | :--- | :--- |
+| `id` | UUID, PK | ID event. |
+| `session_id` | UUID, FK `assessment_sessions.id` | Phiên liên quan. |
+| `student_id` | UUID, FK `users.id` | Sinh viên. |
+| `assignment_id` | UUID, FK `assignments.id` | Bài liên quan. |
+| `event_type` | enum | `paste_detected`, `focus_lost`, `focus_returned`, `window_blur`, `tab_switch_signal`, `chat_quota_exceeded`, `late_submit`, `manual_flag`. |
+| `severity` | enum | `info`, `warning`, `critical`. |
+| `payload` | JSONB | Metadata: duration, file path, char count, source surface. |
+| `created_at` | timestamptz | Thời điểm event. |
 
 ---
 
@@ -358,6 +415,45 @@ Khóa chính gợi ý: `(class_id, user_id)`.
 }
 ```
 
+### 9.4. `assessment_policy`
+
+```json
+{
+  "chatbot_allowed": true,
+  "max_chat_turns_per_session": 3,
+  "max_chat_turns_per_submission": 1,
+  "max_scaffolding_level": 2,
+  "allowed_hint_types": ["location_hint", "concept_probe"],
+  "max_submissions": 3,
+  "paste_policy": {
+    "mode": "log_and_warn",
+    "max_paste_chars": 40
+  },
+  "focus_policy": {
+    "monitor_focus_loss": true,
+    "warn_after_seconds": 5,
+    "critical_after_count": 3
+  },
+  "show_integrity_notice_to_student": true
+}
+```
+
+### 9.5. `scoring_policy` cho Quick Challenge
+
+```json
+{
+  "base_points": 10,
+  "bonus_points": [
+    { "rank": 1, "points": 3 },
+    { "rank": 2, "points": 2 },
+    { "rank": 3, "points": 1 }
+  ],
+  "tie_breakers": ["accepted_at", "attempt_count", "code_quality_score"],
+  "wrong_answer_penalty_seconds": 30,
+  "require_accepted": true
+}
+```
+
 ### 9.4. `draft_payload`
 
 ```json
@@ -390,6 +486,9 @@ Khóa chính gợi ý: `(class_id, user_id)`.
 - `class_members(class_id, user_id)`
 - `assignments(class_id, status, deadline)`
 - `submissions(student_id, assignment_id, submitted_at)`
+- `assessment_sessions(class_id, session_type, status, starts_at)`
+- `assessment_participants(session_id, student_id, status, rank)`
+- `integrity_events(session_id, student_id, event_type, created_at)`
 - `learning_events(student_id, event_type, created_at)`
 - `analytics_snapshots(scope_type, scope_id, metric_date)`
 - `chat_threads(user_id, thread_type, last_activity_at)`

@@ -106,6 +106,8 @@ Sản phẩm gồm ba bề mặt trải nghiệm chính:
 | F6 | Socratic Chat | AI hỏi gợi mở, tăng mức scaffolding theo số lần fail và năng lực cá nhân. | MVP |
 | F7 | Hint Budget | Giới hạn số lượt gợi ý theo policy của bài/lớp. | MVP |
 | F8 | Reflection Prompt | Sau khi pass, sinh viên giải thích ngắn lỗi vừa sửa để củng cố kiến thức. | V1 |
+| F9 | Exam Mode trong VS Code | Khi làm bài kiểm tra, extension hiển thị chế độ thi, giới hạn chatbot theo cấu hình, ghi nhận paste/focus/tab-switch signals trong phạm vi kỹ thuật cho phép. | MVP |
+| F10 | Quick Challenge Alert | Bài tập nhanh được giảng viên phát trên lớp sẽ xuất hiện realtime trong extension, có countdown và nút bắt đầu làm bài. | MVP |
 
 ### 5.2. Web cho giảng viên
 
@@ -118,6 +120,9 @@ Sản phẩm gồm ba bề mặt trải nghiệm chính:
 | T5 | Chatbot giảng viên | Hỏi đáp về tình trạng lớp, bài tập, từng sinh viên, đề xuất can thiệp. | V1 |
 | T6 | AI Exercise Drafting | AI tạo nháp bài tập, test case, rubric, gợi ý sư phạm; giảng viên review và approve. | V1 |
 | T7 | Review AI Logs | Xem các quyết định AI quan trọng, prompt output, lý do đưa gợi ý. | V1 |
+| T8 | Exam Mode Config | Tạo bài kiểm tra, cấu hình số lượt hỏi chatbot, mức gợi ý tối đa, chống paste, focus monitoring, thời lượng và rule nộp bài. | MVP |
+| T9 | Quick Challenge Launcher | Giao bài tập nhanh trong giờ học, phát realtime về VS Code sinh viên, cấu hình chatbot và scoring theo đúng/nhanh. | MVP |
+| T10 | Integrity Dashboard | Xem sự kiện integrity như paste, mất focus, đổi cửa sổ, nộp muộn, dùng quá lượt chatbot. | MVP |
 
 ### 5.3. Web cho sinh viên
 
@@ -127,6 +132,7 @@ Sản phẩm gồm ba bề mặt trải nghiệm chính:
 | S2 | Student Chatbot | Sinh viên hỏi về tiến độ cá nhân, nên ôn gì, bài nào cần làm tiếp. | V1 |
 | S3 | Assignment Navigation | Chatbot điều hướng đến bài tập, trang luyện tập hoặc tài nguyên liên quan. | V1 |
 | S4 | Reflection History | Xem lại lỗi đã gặp, gợi ý đã nhận, bài học rút ra. | V1 |
+| S5 | Exam & Challenge Status | Sinh viên xem bài kiểm tra/quick challenge đang mở, trạng thái nộp, điểm và điểm cộng. | MVP |
 
 ### 5.4. Reverse Teaching Exercise
 
@@ -147,6 +153,30 @@ Các chế độ Reverse Teaching:
 | Agent Confusion | Agent cố tình hiểu sai và hỏi lại. | "Tôi nghĩ index bắt đầu từ 1 trong Python, đúng không?" |
 | Prompt-to-Teach | Sinh viên phải viết prompt/hướng dẫn để agent tự sửa lỗi. | "Hãy hướng dẫn tôi sửa lỗi mà không đưa code hoàn chỉnh." |
 | Diagnose Agent Answer | Agent đưa lời giải sai một phần, sinh viên phải phản biện. | "Đoạn giải thích này sai ở đâu?" |
+
+### 5.5. Exam Mode
+
+Exam Mode là chế độ làm bài kiểm tra trong đó mỗi assignment có **assessment policy** riêng. Giảng viên có thể cấu hình:
+
+- Chatbot có được bật hay không.
+- Tổng số lượt hỏi chatbot cho từng bài hoặc từng submission.
+- Mức scaffolding tối đa, ví dụ bài dễ chỉ cho `Level 1-2`, bài khó cho đến `Level 3-4`.
+- Có cho phép paste vào file đang làm bài hay chỉ ghi nhận paste event.
+- Có ghi nhận focus/tab-switch/window-blur signals hay không.
+- Thời lượng làm bài, thời điểm mở/đóng, số lần nộp tối đa.
+- Cách hiển thị integrity report cho giảng viên.
+
+Về mặt kỹ thuật, VS Code Extension không nên được mô tả như công cụ khóa tuyệt đối toàn bộ hệ điều hành. MVP dùng cách tiếp cận **proctoring-lite**: hạn chế trong phạm vi extension, cảnh báo sinh viên, ghi nhận sự kiện integrity, và đưa các tín hiệu đó vào báo cáo cho giảng viên.
+
+### 5.6. Quick Challenge
+
+Quick Challenge là chế độ bài tập nhanh trong giờ học. Giảng viên phát một bài ngắn cho lớp, bài xuất hiện realtime trong VS Code Extension của sinh viên. Sinh viên code và submit; hệ thống xếp hạng theo rule do giảng viên cấu hình, thường là:
+
+- Accepted trước được điểm cộng cao hơn.
+- Wrong answer không có điểm hoặc bị trừ thời gian.
+- Có thể cho phép hoặc tắt chatbot.
+- Có thể giới hạn số lượt hỏi chatbot, ví dụ 0, 1, 3 lượt.
+- Có countdown và leaderboard live cho giảng viên.
 
 ---
 
@@ -198,6 +228,26 @@ Các chế độ Reverse Teaching:
 5. Hệ thống chấm theo rubric: đúng khái niệm, rõ ràng, không bỏ sót edge case, khả năng sửa hiểu lầm.
 6. Kết quả được ghi vào learning summary.
 
+### 6.6. Exam Mode
+
+1. Giảng viên tạo bài kiểm tra và bật Exam Mode.
+2. Giảng viên cấu hình thời lượng, số lượt submit, chatbot policy, paste policy và focus monitoring.
+3. Sinh viên mở VS Code Extension, thấy bài kiểm tra đang mở.
+4. Extension hiển thị exam banner, countdown và integrity policy.
+5. Sinh viên code, hỏi chatbot trong quota nếu được phép, submit.
+6. Hệ thống chấm bài, lưu submission, chat usage và integrity events.
+7. Giảng viên xem kết quả kèm integrity report.
+
+### 6.7. Quick Challenge trong lớp
+
+1. Giảng viên chọn lớp và bấm `Launch Quick Challenge`.
+2. Giảng viên chọn bài có sẵn hoặc tạo nhanh bằng AI draft.
+3. Giảng viên cấu hình thời lượng, chatbot quota, scoring rule.
+4. Bài được push realtime về VS Code Extension của sinh viên.
+5. Sinh viên nhận alert, bắt đầu code và submit.
+6. Leaderboard cập nhật theo accepted time, score và tie-break rule.
+7. Giảng viên kết thúc challenge và hệ thống ghi điểm cộng.
+
 ---
 
 ## 7. Chính sách AI và sư phạm
@@ -222,6 +272,8 @@ Các chế độ Reverse Teaching:
 | Giảng viên | Intervention Precision | Đề xuất can thiệp của chatbot có được giảng viên dùng không. |
 | Nội dung | Exercise Approval Rate | Tỉ lệ bài tập AI draft được approve sau chỉnh sửa. |
 | An toàn | Code Leakage Rate | Tỉ lệ phản hồi AI vi phạm chính sách không lộ lời giải. |
+| Kiểm tra | Integrity Signal Review Rate | Tỉ lệ bài kiểm tra có integrity signals được giảng viên review. |
+| Lớp học trực tiếp | Quick Challenge Participation | Tỉ lệ sinh viên tham gia bài tập nhanh trong giờ học. |
 
 ---
 
@@ -234,6 +286,8 @@ MVP 1.0 của CodeMentor AI được định nghĩa là một sản phẩm học
 - Giảng viên có web dashboard lớp, dashboard từng sinh viên, chatbot hỏi đáp tình trạng lớp/cá nhân.
 - Giảng viên có AI hỗ trợ tạo bài tập nháp, test case, rubric và chỉ publish sau khi review/approve.
 - Hệ thống có dạng bài Reverse Teaching, trong đó sinh viên đóng vai trợ giảng để giải thích/prompt cho agent.
+- Hệ thống có Exam Mode để cấu hình kiểm tra, giới hạn chatbot và ghi nhận integrity signals.
+- Hệ thống có Quick Challenge để giao bài tập nhanh realtime trong lớp và tính điểm cộng theo đúng/nhanh.
 - Backend có API contract, database schema, LangGraph workflow, audit log, guardrail, security/privacy, testing và deployment plan.
 
 Một MVP được coi là hoàn chỉnh khi giảng viên có thể tạo lớp, giao bài, theo dõi lớp, hỏi chatbot, tạo bài tập bằng AI; sinh viên có thể nhận bài, nộp code, được mentor hỗ trợ, xem tiến độ cá nhân và hoàn thành bài đảo ngược. Các tính năng sau MVP như fine-tune nâng cao, tối ưu chi phí inference và mở rộng nhiều ngôn ngữ được xem là năng lực tăng trưởng, không phải điều kiện để MVP có giá trị sản phẩm.

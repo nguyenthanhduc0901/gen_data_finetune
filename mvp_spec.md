@@ -18,7 +18,9 @@ MVP 1.0 là phiên bản sản phẩm đủ để một giảng viên dùng Code
 7. Sinh viên xem dashboard cá nhân và hỏi chatbot về tiến độ.
 8. Giảng viên dùng AI tạo bài tập nháp và approve.
 9. Sinh viên làm bài Reverse Teaching để chứng minh hiểu sâu.
-10. Hệ thống lưu learning events, analytics, audit và profile năng lực.
+10. Giảng viên bật Exam Mode cho bài kiểm tra với chatbot quota và integrity policy.
+11. Giảng viên phát Quick Challenge trong lớp, bài đẩy realtime về VS Code sinh viên.
+12. Hệ thống lưu learning events, analytics, audit, integrity events và profile năng lực.
 
 ---
 
@@ -38,6 +40,8 @@ MVP 1.0 là phiên bản sản phẩm đủ để một giảng viên dùng Code
 | Student Chatbot | Có | Sinh viên hỏi tiến độ và được điều hướng. |
 | AI Exercise Drafting | Có | Giảng viên tạo draft, review, approve. |
 | Reverse Teaching | Có | Sinh viên giải thích lại cho agent và được chấm rubric. |
+| Exam Mode | Có | Giảng viên cấu hình bài kiểm tra, chatbot quota, mức gợi ý, paste/focus monitoring. |
+| Quick Challenge | Có | Giảng viên giao bài tập nhanh realtime, sinh viên thi đúng/nhanh lấy điểm cộng. |
 | Analytics Snapshot | Có | Dashboard/chatbot phản hồi nhanh và có evidence. |
 | Audit/Guardrail | Có | AI an toàn, kiểm tra được. |
 
@@ -48,7 +52,7 @@ MVP 1.0 là phiên bản sản phẩm đủ để một giảng viên dùng Code
 | Vai trò | Quyền chính | Không được |
 | :--- | :--- | :--- |
 | Student | Xem lớp của mình, làm bài, nộp bài, chat với mentor, xem dashboard cá nhân. | Xem dữ liệu sinh viên khác, hidden test, analytics lớp. |
-| Teacher | Quản lý lớp/bài tập, xem dashboard lớp/sinh viên, hỏi chatbot, approve draft. | Xem lớp không phụ trách, publish draft chưa review. |
+| Teacher | Quản lý lớp/bài tập, tạo exam, launch quick challenge, xem dashboard lớp/sinh viên, hỏi chatbot, approve draft. | Xem lớp không phụ trách, publish draft chưa review. |
 | TA | Xem dashboard, hỗ trợ review submission/chat, tạo draft nếu được cấp quyền. | Thay đổi cấu hình hệ thống. |
 | Admin | Quản lý user, policy, audit, model config. | Can thiệp điểm học tập nếu không có quy trình. |
 
@@ -67,7 +71,9 @@ MVP 1.0 là phiên bản sản phẩm đủ để một giảng viên dùng Code
 7. Hỏi chatbot: "Lớp đang yếu phần nào nhất?"
 8. Mở hồ sơ một sinh viên đang kẹt.
 9. Tạo một bài Reverse Teaching để kiểm tra hiểu sâu.
-10. Dùng insight để chuẩn bị buổi học tiếp theo.
+10. Bật Exam Mode cho bài kiểm tra giữa buổi hoặc cuối buổi.
+11. Launch Quick Challenge để cả lớp giải nhanh lấy điểm cộng.
+12. Dùng insight để chuẩn bị buổi học tiếp theo.
 
 ### 4.2. Student success journey
 
@@ -80,7 +86,9 @@ MVP 1.0 là phiên bản sản phẩm đủ để một giảng viên dùng Code
 7. Mở web dashboard cá nhân.
 8. Hỏi chatbot: "Mình nên làm bài nào tiếp?"
 9. Làm Reverse Teaching để giải thích lại khái niệm.
-10. Thấy mastery map được cập nhật.
+10. Làm bài kiểm tra trong Exam Mode với chatbot quota rõ ràng.
+11. Nhận Quick Challenge trong VS Code và submit nhanh.
+12. Thấy mastery map và điểm cộng được cập nhật.
 
 ---
 
@@ -120,6 +128,22 @@ MVP 1.0 là phiên bản sản phẩm đủ để một giảng viên dùng Code
 - Hệ thống chấm rubric và lưu summary.
 - Giảng viên xem được kết quả.
 
+### 5.5. Exam Mode
+
+- Giảng viên cấu hình `assessment_policy` cho từng bài kiểm tra.
+- Sinh viên thấy exam banner, countdown, chatbot quota, paste/focus policy trong VS Code.
+- Chatbot bị giới hạn theo `chatbot_allowed`, `max_chat_turns`, `max_scaffolding_level`.
+- Paste/focus/window-blur events được ghi nhận thành integrity signals.
+- Giảng viên xem được integrity report cùng submission result.
+
+### 5.6. Quick Challenge
+
+- Giảng viên launch challenge từ bài có sẵn hoặc draft nhanh.
+- Challenge được push realtime đến VS Code Extension của sinh viên trong lớp.
+- Sinh viên thấy alert, countdown và trạng thái chatbot quota.
+- Leaderboard tính theo accepted status, thời gian accepted, score và tie-break rule.
+- Điểm cộng được lưu như bonus learning/grade event.
+
 ---
 
 ## 6. Product quality bar
@@ -150,6 +174,8 @@ MVP 1.0 là phiên bản sản phẩm đủ để một giảng viên dùng Code
 10. Giảng viên hỏi chatbot về lỗi phổ biến.
 11. Sinh viên hỏi chatbot web bài tiếp theo.
 12. Sinh viên hoàn thành Reverse Teaching.
+13. Giảng viên launch Exam Mode với chatbot quota giới hạn.
+14. Giảng viên launch Quick Challenge và sinh viên nhận bài trong VS Code.
 
 ---
 
@@ -162,6 +188,8 @@ MVP 1.0 là phiên bản sản phẩm đủ để một giảng viên dùng Code
 - UI có loading, empty, error states.
 - Frontend responsive cho desktop và tablet; student web dùng được trên mobile.
 - Extension không block editor khi đang submit.
+- Quick Challenge notification đến extension trong vòng vài giây khi giảng viên launch.
+- Exam Mode integrity events có trace_id và session_id.
 - Dữ liệu nhạy cảm được mask trong audit.
 
 ---

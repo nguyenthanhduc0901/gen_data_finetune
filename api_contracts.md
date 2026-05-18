@@ -142,6 +142,7 @@ Query:
 
 - `status=published|draft|closed`
 - `type=coding|reverse_teaching`
+- `delivery_mode=practice|homework|exam|quick_challenge`
 
 Response:
 
@@ -152,6 +153,7 @@ Response:
       "id": "uuid",
       "title": "Tính giai thừa",
       "type": "coding",
+      "delivery_mode": "homework",
       "difficulty": "easy",
       "deadline": "2026-05-30T23:59:00+07:00",
       "student_status": "not_started"
@@ -170,9 +172,15 @@ Response:
   "title": "Tính giai thừa",
   "description": "...",
   "type": "coding",
+  "delivery_mode": "homework",
   "knowledge_tags": ["loops", "accumulator"],
   "hint_policy": {
     "max_hints_per_failed_submission": 5
+  },
+  "assessment_policy": {
+    "chatbot_allowed": true,
+    "max_chat_turns_per_session": 5,
+    "max_scaffolding_level": 3
   },
   "visible_test_cases": [
     {
@@ -193,6 +201,7 @@ Request:
 {
   "class_id": "uuid",
   "type": "coding",
+  "delivery_mode": "homework",
   "title": "Tổng số chẵn",
   "description": "...",
   "knowledge_tags": ["loops", "arrays"],
@@ -206,6 +215,14 @@ Request:
   ],
   "hint_policy": {
     "max_hints_per_failed_submission": 5
+  },
+  "assessment_policy": {
+    "chatbot_allowed": true,
+    "max_chat_turns_per_session": 5,
+    "max_scaffolding_level": 3,
+    "paste_policy": {
+      "mode": "allow"
+    }
   }
 }
 ```
@@ -223,6 +240,7 @@ Request:
 ```json
 {
   "assignment_id": "uuid",
+  "session_id": "uuid-or-null",
   "language": "python",
   "source_code": "n = int(input())\n..."
 }
@@ -238,7 +256,12 @@ Response:
   "total_tests": 5,
   "public_feedback": "Một số test chưa đúng.",
   "mentor_available": true,
-  "thread_id": "mentor:student_id:assignment_id"
+  "thread_id": "mentor:student_id:assignment_id",
+  "assessment_status": {
+    "chat_turns_remaining": 2,
+    "submissions_remaining": 2,
+    "integrity_flags": []
+  }
 }
 ```
 
@@ -260,7 +283,160 @@ Response:
 
 ---
 
-## 6. AI cho sinh viên
+## 6. Exam Mode & Quick Challenge
+
+### `POST /assessment-sessions`
+
+Role: `teacher`, `ta`
+
+Tạo phiên kiểm tra hoặc quick challenge từ một assignment đã có.
+
+Request:
+
+```json
+{
+  "class_id": "uuid",
+  "assignment_id": "uuid",
+  "session_type": "exam",
+  "title": "Kiểm tra vòng lặp 15 phút",
+  "starts_at": "2026-05-18T09:00:00+07:00",
+  "ends_at": "2026-05-18T09:15:00+07:00",
+  "duration_minutes": 15,
+  "assessment_policy": {
+    "chatbot_allowed": true,
+    "max_chat_turns_per_session": 3,
+    "max_scaffolding_level": 2,
+    "paste_policy": {
+      "mode": "log_and_warn",
+      "max_paste_chars": 40
+    },
+    "focus_policy": {
+      "monitor_focus_loss": true,
+      "warn_after_seconds": 5,
+      "critical_after_count": 3
+    }
+  },
+  "scoring_policy": {
+    "base_points": 10,
+    "require_accepted": true
+  }
+}
+```
+
+Response:
+
+```json
+{
+  "session_id": "uuid",
+  "status": "scheduled"
+}
+```
+
+### `POST /assessment-sessions/{session_id}/launch`
+
+Role: `teacher`, `ta`
+
+Đưa session sang trạng thái live và push realtime tới VS Code Extension của sinh viên.
+
+Response:
+
+```json
+{
+  "session_id": "uuid",
+  "status": "live",
+  "notified_students": 42
+}
+```
+
+### `GET /assessment-sessions/{session_id}`
+
+Response:
+
+```json
+{
+  "id": "uuid",
+  "session_type": "quick_challenge",
+  "status": "live",
+  "assignment": {
+    "id": "uuid",
+    "title": "Tìm số lớn nhất"
+  },
+  "starts_at": "2026-05-18T09:00:00+07:00",
+  "ends_at": "2026-05-18T09:10:00+07:00",
+  "assessment_policy": {
+    "chatbot_allowed": false,
+    "max_chat_turns_per_session": 0
+  }
+}
+```
+
+### `POST /assessment-sessions/{session_id}/integrity-events`
+
+Role: `student` via VS Code Extension
+
+Request:
+
+```json
+{
+  "event_type": "paste_detected",
+  "severity": "warning",
+  "assignment_id": "uuid",
+  "payload": {
+    "char_count": 120,
+    "file_name": "main.py"
+  }
+}
+```
+
+Response:
+
+```json
+{
+  "accepted": true,
+  "event_id": "uuid"
+}
+```
+
+### `GET /assessment-sessions/{session_id}/leaderboard`
+
+Role: `teacher`, `ta`, `student` trong lớp nếu session cho phép xem.
+
+Response:
+
+```json
+{
+  "session_id": "uuid",
+  "items": [
+    {
+      "rank": 1,
+      "student_id": "uuid",
+      "display_name": "Nguyen A",
+      "status": "accepted",
+      "accepted_at": "2026-05-18T09:04:12+07:00",
+      "attempt_count": 2,
+      "bonus_points": 3
+    }
+  ]
+}
+```
+
+### `POST /assessment-sessions/{session_id}/end`
+
+Role: `teacher`, `ta`
+
+Response:
+
+```json
+{
+  "session_id": "uuid",
+  "status": "ended",
+  "finalized_participants": 42
+}
+```
+
+---
+
+## 7. AI cho sinh viên
 
 ### `POST /ai/student/mentor`
 
@@ -272,6 +448,7 @@ Request:
 {
   "thread_id": "mentor:student_id:assignment_id",
   "submission_id": "uuid",
+  "session_id": "uuid-or-null",
   "message": "Em không hiểu vì sao test 3 sai."
 }
 ```
@@ -283,6 +460,10 @@ Response:
   "message": "Bạn thử kiểm tra giá trị ban đầu của biến tích lũy. Với phép nhân, phần tử trung hòa là gì?",
   "scaffolding_level": 2,
   "hint_budget_remaining": 3,
+  "assessment_policy_applied": {
+    "max_scaffolding_level": 2,
+    "chat_turns_remaining": 2
+  },
   "policy_flags": {
     "no_code_leakage": true
   }
@@ -320,7 +501,7 @@ Response:
 
 ---
 
-## 7. AI cho giảng viên
+## 8. AI cho giảng viên
 
 ### `POST /ai/teacher/chat`
 
@@ -408,7 +589,7 @@ Response:
 
 ---
 
-## 8. Reverse Teaching
+## 9. Reverse Teaching
 
 ### `POST /reverse-teaching/sessions`
 
@@ -476,7 +657,7 @@ Response:
 
 ---
 
-## 9. Analytics
+## 10. Analytics
 
 ### `GET /analytics/classes/{class_id}/overview`
 
@@ -528,7 +709,7 @@ Response:
 
 ---
 
-## 10. Admin
+## 11. Admin
 
 ### `GET /admin/ai-audit-logs`
 

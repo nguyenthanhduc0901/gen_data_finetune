@@ -10,11 +10,11 @@
 
 | Hạng mục | Mức hiện tại | Nhận xét |
 | :--- | :--- | :--- |
-| PRD | Hoàn chỉnh cho MVP | Có persona, pain point, scope, feature set, KPI và định nghĩa MVP. |
+| PRD | Hoàn chỉnh cho MVP | Có persona, pain point, scope, feature set, Exam Mode, Quick Challenge, KPI và định nghĩa MVP. |
 | User stories | Hoàn chỉnh cho MVP | Có epic theo từng vai trò, acceptance criteria và priority. |
-| UI/UX | Hoàn chỉnh cho MVP | Có IA, màn hình, layout, component, state, responsive và VS Code extension. |
+| UI/UX | Hoàn chỉnh cho MVP | Có IA, màn hình, layout, component, Exam/Challenge UI, state, responsive và VS Code extension. |
 | Architecture | Hoàn chỉnh cho MVP | Thiết kế LangGraph đơn giản, có workflow rõ cho mentor, dashboard chatbot, exercise drafting, reverse teaching. |
-| Database | Hoàn chỉnh cho MVP | Bao phủ user/class/assignment/submission/chat/memory/draft/reverse/analytics/audit. |
+| Database | Hoàn chỉnh cho MVP | Bao phủ user/class/assignment/submission/chat/memory/draft/reverse/exam/quick challenge/analytics/audit. |
 | API | Hoàn chỉnh cho MVP | Có contract cho web, extension, AI workflows, analytics. |
 | AI/Chatbot | Hoàn chỉnh cho MVP | Có prompt policy, guardrail, memory update, chatbot giảng viên/sinh viên, Reverse Teaching. |
 | Security/Privacy | Hoàn chỉnh cho MVP | Có RBAC, threat model, data scope, retention, audit. |
@@ -60,12 +60,14 @@ CodeMentor AI có đủ nền tảng để trở thành một sản phẩm mạn
 ## 4. Những quyết định đã chốt trong docs
 
 - MVP 1.0 gồm cả VS Code extension, teacher web, student web, chatbot hai phía, AI exercise drafting và Reverse Teaching.
+- MVP 1.0 gồm Exam Mode và Quick Challenge như hai năng lực classroom/assessment chính thức.
 - LangGraph không triển khai multi-agent tự trị trong MVP; dùng workflow graph có state và route rõ ràng.
 - AI tạo bài tập chỉ tạo draft; giảng viên approve mới publish.
 - Chatbot giảng viên trả lời dựa trên evidence và analytics snapshot.
 - Chatbot sinh viên chỉ truy cập dữ liệu của chính sinh viên đó.
 - Reverse Teaching là assignment type chính thức, không phải demo chat phụ.
 - Guardrail, audit và privacy là yêu cầu MVP, không phải phần bổ sung sau.
+- Exam Mode dùng proctoring-lite: ghi nhận integrity signals trong phạm vi VS Code/app, không hứa khóa tuyệt đối toàn bộ hệ điều hành.
 
 ---
 
