@@ -1,179 +1,254 @@
-# ROADMAP TRIỂN KHAI
+# ROADMAP TRIỂN KHAI MVP 1.0
 
 **Dự án:** CodeMentor AI  
-**Phiên bản:** 1.1.0
+**Mục tiêu:** đưa một MVP hoàn chỉnh ra pilot trong lớp lập trình nhập môn, sau đó mở rộng theo dữ liệu sử dụng thật.
 
 ---
 
-## 1. Mục tiêu roadmap
+## 1. Định hướng roadmap
 
-Roadmap này chia dự án thành các giai đoạn có thể triển khai, kiểm thử và demo được. Ưu tiên của dự án là hoàn thiện trải nghiệm học tập cốt lõi trước, sau đó mở rộng chatbot web và bài tập đảo ngược.
+Roadmap này không định nghĩa MVP như một bản thiếu tính năng. MVP 1.0 của CodeMentor AI đã bao gồm đủ product loop:
+
+- VS Code Extension cho sinh viên.
+- Teacher Web Dashboard.
+- Student Web Dashboard.
+- Chatbot web cho giảng viên.
+- Chatbot web cho sinh viên.
+- AI Exercise Drafting có review/approve.
+- Reverse Teaching Exercise.
+- Analytics, guardrail, audit, security, testing và deployment.
+
+Các phase bên dưới là thứ tự triển khai nội bộ để giảm rủi ro, không phải cắt bớt phạm vi sản phẩm.
 
 ---
 
-## 2. Phase 0: Chuẩn hóa tài liệu và quyết định nền tảng
+## 2. Milestone 0: Product & Architecture Freeze
 
-Mục tiêu: thống nhất phạm vi sản phẩm và kiến trúc trước khi code.
+Mục tiêu: chốt tài liệu và contract để các team làm song song.
 
 Deliverables:
 
-- PRD cập nhật.
-- Architecture LangGraph mới.
-- Database schema logic.
-- User stories.
-- API contracts.
-- Roadmap.
+- `README.md`
+- `mvp_spec.md`
+- `user_stories.md`
+- `ui_ux_spec.md`
+- `technical_architecture.md`
+- `database.md`
+- `api_contracts.md`
+- `chatbot.md`
+- `security_privacy.md`
+- `testing_strategy.md`
+- `deployment.md`
+- `prompt_library.md`
 
-Trạng thái: đã hoàn thành trong bộ tài liệu hiện tại.
+Exit criteria:
 
-Quyết định cần chốt tiếp:
-
-- Framework frontend web.
-- Cơ chế sandbox judge.
-- Model provider và fallback.
-- Chính sách lưu source code/chat logs.
+- MVP definition được chốt.
+- UI flow được chốt.
+- API contract đủ cho frontend/extension mock.
+- Database schema đủ cho migration đầu tiên.
 
 ---
 
-## 3. Phase 1: MVP nền tảng học lập trình
+## 3. Milestone 1: Core Platform
 
-Mục tiêu: sinh viên làm bài trong VS Code, nộp bài, nhận gợi ý AI khi fail; giảng viên xem dashboard cơ bản.
+Mục tiêu: dựng nền backend, auth, database, lớp học và bài tập.
 
 Scope:
 
-- Auth và RBAC cơ bản.
-- Class management.
+- Auth/RBAC.
+- User/class/class_members.
 - Assignment CRUD.
 - Test case CRUD.
-- Submission API.
-- Judge Sandbox cho Python.
-- VS Code Extension: login, assignment list, submit, mentor chat.
-- StudentMentorGraph: analyze error, choose scaffolding, generate hint, guardrail.
-- Database: users, classes, assignments, test_cases, submissions, chat_threads, chat_messages, learning_events.
-- Teacher dashboard cơ bản: completion, attempts, hint density.
+- Database migrations.
+- OpenAPI schema.
+- Basic admin seed.
 
-Không scope:
+Exit criteria:
 
-- AI tạo bài tập.
-- Chatbot web cho giảng viên.
-- Reverse Teaching.
-- Fine-tune production model.
-
-Success criteria:
-
-- Sinh viên có thể hoàn thành một bài Python từ VS Code.
-- Submission fail kích hoạt mentor chat.
-- AI không lộ lời giải trong bộ test guardrail.
-- Giảng viên xem được trạng thái lớp.
+- Teacher tạo lớp và bài tập được.
+- Student join lớp được.
+- RBAC tests pass.
+- API contract tests pass.
 
 ---
 
-## 4. Phase 2: Web chatbot và analytics
+## 4. Milestone 2: Judge & VS Code Extension
 
-Mục tiêu: giảng viên và sinh viên có chatbot web dựa trên dữ liệu thật.
+Mục tiêu: sinh viên làm bài và nộp code từ IDE.
 
 Scope:
 
-- Analytics snapshots.
-- TeacherInsightGraph.
-- StudentCoachGraph.
-- Teacher chatbot trên dashboard lớp.
-- Student learning dashboard.
-- Student chatbot có navigation action.
-- Hồ sơ năng lực: mastery map, common pitfalls, independence score.
-- Teacher query logs và AI audit logs.
+- Judge worker cho Python.
+- Submission lifecycle.
+- VS Code login.
+- Assignment tree.
+- Submit current file.
+- Submission result panel.
+- Reflection prompt after pass.
 
-Success criteria:
+Exit criteria:
 
-- Giảng viên hỏi được tình trạng lớp và nhận câu trả lời có evidence.
-- Sinh viên hỏi được tiến độ cá nhân và được điều hướng đến bài phù hợp.
-- RBAC ngăn truy cập dữ liệu ngoài scope.
+- Student submit wrong/accepted code từ VS Code.
+- Judge sandbox security tests pass.
+- Extension không block editor.
 
 ---
 
-## 5. Phase 3: AI Exercise Drafting
+## 5. Milestone 3: StudentMentorGraph
 
-Mục tiêu: AI hỗ trợ giảng viên tạo bài tập nhưng không tự publish.
+Mục tiêu: AI Mentor hỗ trợ debug an toàn khi submission fail.
+
+Scope:
+
+- LangGraph runtime.
+- StudentMentorGraph nodes.
+- Prompt library v1.
+- No-code leakage guardrail.
+- Chat threads/messages.
+- Learning events.
+- Hint budget.
+
+Exit criteria:
+
+- Submission fail tự mở Mentor chat.
+- Hint không lộ lời giải trong regression suite.
+- Learning event được lưu.
+- Trace_id và audit log hoạt động.
+
+---
+
+## 6. Milestone 4: Teacher & Student Dashboards
+
+Mục tiêu: web dashboard có giá trị product rõ cho hai vai trò chính.
+
+Scope:
+
+- Teacher overview dashboard.
+- Student detail dashboard.
+- Assignment insights.
+- Student My Learning dashboard.
+- Mastery map.
+- Common pitfalls.
+- Reflection history.
+- Analytics snapshots.
+
+Exit criteria:
+
+- Teacher thấy completion, hint density, weak tags.
+- Student thấy tiến độ và bài nên làm tiếp.
+- Empty/loading/error states đầy đủ.
+
+---
+
+## 7. Milestone 5: Web Chatbots
+
+Mục tiêu: giảng viên và sinh viên hỏi đáp trên web dựa trên dữ liệu thật.
+
+Scope:
+
+- TeacherInsightGraph.
+- StudentCoachGraph.
+- Evidence drawer.
+- Navigation actions.
+- Teacher query logs.
+- Privacy guard.
+
+Exit criteria:
+
+- Teacher hỏi được tình trạng lớp/cá nhân với evidence.
+- Student hỏi được tiến độ cá nhân và mở bài tập phù hợp.
+- Out-of-scope data access bị chặn.
+
+---
+
+## 8. Milestone 6: AI Exercise Drafting
+
+Mục tiêu: AI giúp tạo bài tập nhưng giảng viên giữ quyền kiểm duyệt.
 
 Scope:
 
 - ExerciseDraftGraph.
-- `exercise_drafts`, `exercise_draft_versions`.
-- UI tạo draft từ prompt.
-- Validation report cho statement/test/rubric.
-- Review, edit, approve, reject.
-- Publish assignment từ draft approved.
+- Draft payload.
+- Validation report.
+- Draft version history.
+- Review/edit/approve/reject UI.
+- Publish assignment from approved draft.
 
-Success criteria:
+Exit criteria:
 
-- AI tạo được draft bài coding hợp lệ.
-- Giảng viên chỉnh sửa và approve được.
-- Version history lưu đầy đủ.
-- Draft không thể publish nếu chưa approve.
+- Teacher tạo draft từ prompt.
+- Validation report hiển thị.
+- Draft chỉ publish sau approval.
+- Version history lưu thay đổi.
 
 ---
 
-## 6. Phase 4: Reverse Teaching Exercise
+## 9. Milestone 7: Reverse Teaching
 
-Mục tiêu: thêm dạng bài tập đảo ngược để đánh giá năng lực giải thích.
+Mục tiêu: sinh viên chứng minh hiểu sâu bằng cách giảng lại cho agent.
 
 Scope:
 
-- Assignment type `reverse_teaching`.
+- Reverse teaching assignment config.
 - ReverseTeachingGraph.
+- Session UI.
 - Rubric scoring.
-- Reverse teaching session UI.
-- Teacher view kết quả rubric và transcript.
-- Cập nhật mastery map từ reverse summary.
+- Transcript.
+- Learning summary and mastery update candidate.
 
-Success criteria:
+Exit criteria:
 
-- Sinh viên hoàn thành một phiên Explain Back.
-- Agent hỏi follow-up khi giải thích thiếu.
-- Hệ thống tạo rubric score và learning summary.
-- Giảng viên xem được kết quả.
+- Student hoàn thành một reverse session.
+- Agent hỏi follow-up khi câu trả lời thiếu.
+- Teacher xem rubric score và summary.
 
 ---
 
-## 7. Phase 5: Fine-tune và tối ưu AI
+## 10. Milestone 8: Hardening & Pilot
 
-Mục tiêu: giảm chi phí/tăng chất lượng cho các node chuyên môn.
+Mục tiêu: đưa MVP vào pilot an toàn.
 
 Scope:
 
-- Dataset schema cho debug analyzer, safe hint, reverse scoring.
-- Evaluation harness.
-- Baseline report.
-- Fine-tune adapter.
-- Model routing trong LLM Gateway.
-- Regression tests cho no-code leakage.
+- E2E demo script.
+- AI regression suite.
+- RBAC/security suite.
+- Load smoke test.
+- Monitoring dashboard.
+- Backup/restore test.
+- Pilot runbook.
 
-Success criteria:
+Exit criteria:
 
-- Root cause accuracy vượt baseline.
-- JSON validity cao.
-- No-code leakage thấp hơn ngưỡng policy.
-- Có rollback plan.
+- Release gates trong `testing_strategy.md` pass.
+- Deployment checklist pass.
+- Teacher/student pilot accounts ready.
+- Rollback plan ready.
 
 ---
 
-## 8. Rủi ro chính
+## 11. Post-MVP growth
+
+Sau pilot, các hướng mở rộng:
+
+- Fine-tune debug analyzer/safe hint adapter bằng dữ liệu thật đã ẩn danh.
+- Hỗ trợ C/C++/Java.
+- LMS integration.
+- Parent/department-level reporting nếu cần.
+- A/B testing scaffolding strategies.
+- Advanced recommendation engine.
+
+---
+
+## 12. Rủi ro và cách giảm thiểu
 
 | Rủi ro | Ảnh hưởng | Giảm thiểu |
 | :--- | :--- | :--- |
-| AI lộ lời giải | Cao | Guardrail, hint policy, audit, review sample. |
-| Judge sandbox không an toàn | Cao | Container isolation, no network, resource limits. |
-| Analytics chậm | Trung bình | Snapshot, index, background jobs. |
-| LangGraph quá phức tạp | Trung bình | Single orchestrated graph, node nhỏ, typed state. |
-| AI tạo bài sai | Trung bình | Draft-only, validation, teacher approval. |
-| Dữ liệu sinh viên nhạy cảm | Cao | RBAC, retention policy, audit, anonymization. |
-
----
-
-## 9. Các tài liệu nên bổ sung sau roadmap này
-
-- `security_privacy.md`: threat model, RBAC, retention, PII.
-- `testing_strategy.md`: backend, frontend, judge, AI eval, e2e.
-- `deployment.md`: Docker, env, migration, observability.
-- `ui_ux_spec.md`: wireframe, navigation, states, empty/loading/error.
-- `prompt_library.md`: prompt versioning và regression cases.
+| AI lộ lời giải | Cao | Prompt policy, guardrail, regression, audit. |
+| Dashboard thiếu giá trị | Cao | UI tập trung action, evidence, weak tags, intervention. |
+| LangGraph phức tạp | Trung bình | Single orchestrated graph, typed state, node nhỏ. |
+| Judge sandbox rủi ro | Cao | No-network, resource limit, process isolation. |
+| Chatbot trả lời không evidence | Cao | Analytics snapshot, answer schema, evidence drawer. |
+| AI draft sai test | Trung bình | Validation report, teacher approval, test preview. |
+| Pilot quá tải vận hành | Trung bình | Monitoring, runbook, rollback, seed scripts. |

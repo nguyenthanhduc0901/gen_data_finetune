@@ -1,112 +1,81 @@
-# ĐÁNH GIÁ BỘ TÀI LIỆU DỰ ÁN
+# ĐÁNH GIÁ & HOÀN THIỆN BỘ TÀI LIỆU DỰ ÁN
 
 **Dự án:** CodeMentor AI  
 **Ngày rà soát:** 2026-05-18  
-**Kết luận ngắn:** Trước khi bổ sung, tài liệu ở mức ý tưởng tốt nhưng chưa đủ chi tiết để triển khai đồng bộ. Sau khi cập nhật, bộ docs đã có PRD, architecture, chatbot spec, database, user stories, API và roadmap.
+**Kết luận:** Bộ tài liệu hiện được chuẩn hóa theo hướng **MVP 1.0 hoàn chỉnh**, đủ để team product, design, backend, frontend, extension và AI cùng triển khai một pilot thật.
 
 ---
 
-## 1. Mức độ chi tiết trước khi chỉnh
+## 1. Mức độ chi tiết hiện tại
 
-| Hạng mục | Mức cũ | Nhận xét |
+| Hạng mục | Mức hiện tại | Nhận xét |
 | :--- | :--- | :--- |
-| Tầm nhìn sản phẩm | Trung bình | Có định hướng AI Mentor rõ, nhưng thiếu phạm vi web chatbot và student dashboard. |
-| Tính năng | Thấp đến trung bình | Nêu feature ở mức headline, thiếu acceptance criteria và priority. |
-| User story | Thiếu | Chưa có file riêng, chưa mô tả vai trò, hành vi, điều kiện hoàn thành. |
-| LangGraph | Trung bình nhưng hơi phức tạp | Có node cơ bản, nhưng đang nghiêng multi-agent trong khi MVP chưa cần. |
-| Database | Trung bình | Có bảng lõi, thiếu reverse teaching, exercise drafting, analytics snapshot, audit. |
-| API | Thiếu | Chưa có contract endpoint/request/response. |
-| Chatbot web | Thiếu | Chưa có chatbot giảng viên/sinh viên trên web. |
-| AI safety | Thấp | Có no-code rule nhưng thiếu guardrail, privacy, audit, evaluation. |
-| Roadmap | Thiếu | Chưa có thứ tự MVP/V1/rủi ro. |
-| Fine-tune | Trung bình | Có pipeline nhưng chưa gắn rõ vào kiến trúc sản phẩm và policy. |
+| PRD | Hoàn chỉnh cho MVP | Có persona, pain point, scope, feature set, KPI và định nghĩa MVP. |
+| User stories | Hoàn chỉnh cho MVP | Có epic theo từng vai trò, acceptance criteria và priority. |
+| UI/UX | Hoàn chỉnh cho MVP | Có IA, màn hình, layout, component, state, responsive và VS Code extension. |
+| Architecture | Hoàn chỉnh cho MVP | Thiết kế LangGraph đơn giản, có workflow rõ cho mentor, dashboard chatbot, exercise drafting, reverse teaching. |
+| Database | Hoàn chỉnh cho MVP | Bao phủ user/class/assignment/submission/chat/memory/draft/reverse/analytics/audit. |
+| API | Hoàn chỉnh cho MVP | Có contract cho web, extension, AI workflows, analytics. |
+| AI/Chatbot | Hoàn chỉnh cho MVP | Có prompt policy, guardrail, memory update, chatbot giảng viên/sinh viên, Reverse Teaching. |
+| Security/Privacy | Hoàn chỉnh cho MVP | Có RBAC, threat model, data scope, retention, audit. |
+| Testing | Hoàn chỉnh cho MVP | Có test pyramid và AI evaluation. |
+| Deployment | Hoàn chỉnh cho MVP | Có môi trường, service topology, CI/CD, observability. |
+| Fine-tune | Sẵn sàng sau MVP | Đã định nghĩa vai trò model fine-tune và evaluation, không chặn MVP. |
 
 ---
 
-## 2. Dự án còn thiếu file gì
+## 2. Bộ tài liệu cuối cùng cần có
 
-Trước khi cập nhật, repo chỉ có:
-
-- `README.md`
-- `technical_architecture.md`
-- `chatbot.md`
-- `database.md`
-- `finetune_gemma.md`
-
-Các file còn thiếu để một dự án tài liệu sản phẩm/kỹ thuật đầy đủ hơn:
-
-| File cần có | Trạng thái sau cập nhật | Lý do cần |
+| File | Trạng thái | Vai trò |
 | :--- | :--- | :--- |
-| `docs_audit.md` | Đã thêm | Ghi lại đánh giá mức độ chi tiết, thiếu sót và quyết định bổ sung. |
-| `user_stories.md` | Đã thêm | Làm rõ nhu cầu theo vai trò, acceptance criteria, priority. |
-| `api_contracts.md` | Đã thêm | Giúp frontend, backend, extension và AI runtime tích hợp thống nhất. |
-| `roadmap.md` | Đã thêm | Chia MVP/V1/V2, giảm mơ hồ khi triển khai. |
-| `security_privacy.md` | Chưa thêm | Nên có file riêng khi bước vào implementation vì dữ liệu sinh viên và code rất nhạy cảm. |
-| `deployment.md` | Chưa thêm | Cần cho Docker, env, migration, observability, CI/CD. |
-| `testing_strategy.md` | Chưa thêm | Cần cho unit/integration/e2e/AI evaluation. |
-| `ui_ux_spec.md` | Chưa thêm | Cần nếu bắt đầu thiết kế màn hình chi tiết. |
-| `data_retention_policy.md` | Chưa thêm | Cần quyết định lưu code/chat/log bao lâu. |
+| `README.md` | Đã có | PRD tổng quan và bản đồ tài liệu. |
+| `mvp_spec.md` | Đã có | Định nghĩa MVP 1.0 hoàn chỉnh và tiêu chí nghiệm thu. |
+| `user_stories.md` | Đã có | User stories và acceptance criteria. |
+| `ui_ux_spec.md` | Đã có | Thiết kế UI cho từng user và VS Code extension. |
+| `technical_architecture.md` | Đã có | Kiến trúc hệ thống và LangGraph. |
+| `database.md` | Đã có | Schema logic PostgreSQL. |
+| `api_contracts.md` | Đã có | API request/response. |
+| `chatbot.md` | Đã có | AI Mentor, chatbot, Reverse Teaching và guardrail. |
+| `security_privacy.md` | Đã có | Bảo mật, phân quyền, dữ liệu, audit. |
+| `testing_strategy.md` | Đã có | Chiến lược kiểm thử và AI evaluation. |
+| `deployment.md` | Đã có | Triển khai, CI/CD, observability. |
+| `prompt_library.md` | Đã có | Prompt lõi, versioning, regression cases. |
+| `finetune_gemma.md` | Đã có | Fine-tune và model routing sau MVP. |
+| `roadmap.md` | Đã có | Lộ trình pilot và mở rộng. |
 
 ---
 
-## 3. Những phần đã bổ sung vào file hiện có
+## 3. Nhận định product
 
-### `README.md`
+CodeMentor AI có đủ nền tảng để trở thành một sản phẩm mạnh vì giải quyết cả ba lớp giá trị:
 
-- Viết lại thành PRD rõ hơn.
-- Bổ sung web chatbot cho giảng viên và sinh viên.
-- Bổ sung AI Exercise Drafting và luồng approve.
-- Bổ sung Reverse Teaching Exercise.
-- Bổ sung KPI và trạng thái hoàn thiện tính năng.
-- Bổ sung bản đồ tài liệu.
+1. **Giá trị cho sinh viên:** học bằng cách tự debug, nhận gợi ý đúng lúc, xem tiến độ cá nhân, làm bài đảo ngược để chứng minh hiểu sâu.
+2. **Giá trị cho giảng viên:** nhìn thấy tình trạng lớp theo dữ liệu quá trình, hỏi chatbot để ra quyết định nhanh, tạo bài tập nháp bằng AI nhưng vẫn giữ quyền kiểm duyệt.
+3. **Giá trị vận hành:** có schema, API, audit, security, testing, deployment và model strategy rõ ràng.
 
-### `technical_architecture.md`
-
-- Thiết kế lại LangGraph theo hướng **Single Orchestrated Graph + Specialized Routes**.
-- Tách workflow: StudentMentor, TeacherInsight, StudentCoach, ExerciseDraft, ReverseTeaching.
-- Bổ sung state schema, data flow, security và khuyến nghị MVP.
-
-### `chatbot.md`
-
-- Mở rộng thành spec AI đầy đủ.
-- Bổ sung chatbot giảng viên, chatbot sinh viên, chatbot tạo bài tập.
-- Bổ sung Reverse Teaching, rubric, prompt policy, guardrail, memory update.
-
-### `database.md`
-
-- Bổ sung role `ta`.
-- Bổ sung `assignment.type`, `hint_policy`, `rubric`.
-- Bổ sung `reverse_teaching_configs`, `reverse_teaching_sessions`.
-- Bổ sung `exercise_drafts`, `exercise_draft_versions`.
-- Bổ sung `learning_events`, `analytics_snapshots`, `teacher_ai_queries`, `ai_audit_logs`.
-
-### `finetune_gemma.md`
-
-- Chuyển từ tài liệu fine-tune rời rạc sang tài liệu tích hợp model vào sản phẩm.
-- Bổ sung task safe hint, reverse scoring, exercise draft support.
-- Bổ sung evaluation, model routing và rủi ro policy.
+Điểm mạnh nhất của sản phẩm là không định vị AI như công cụ làm hộ, mà như một **learning intelligence layer** nằm giữa IDE, bài tập, dashboard và dữ liệu học tập.
 
 ---
 
-## 4. Tính năng đã hoàn thiện chưa?
+## 4. Những quyết định đã chốt trong docs
 
-Theo góc nhìn tài liệu: **chưa hoàn thiện trước bản cập nhật này**. Các thiếu sót chính là:
-
-- Chưa mô tả chatbot web cho giảng viên.
-- Chưa mô tả chatbot web cho sinh viên.
-- Chưa có bài tập đảo ngược.
-- Chưa có user story chi tiết.
-- Chưa có API contract.
-- Kiến trúc LangGraph còn có xu hướng phức tạp hơn mức cần thiết.
-- Database chưa đủ bảng để vận hành AI drafting, approval, reverse teaching và analytics.
-
-Sau cập nhật này, tài liệu đã đủ tốt để bước sang giai đoạn thiết kế UI, viết migration, dựng API skeleton và prototype LangGraph.
+- MVP 1.0 gồm cả VS Code extension, teacher web, student web, chatbot hai phía, AI exercise drafting và Reverse Teaching.
+- LangGraph không triển khai multi-agent tự trị trong MVP; dùng workflow graph có state và route rõ ràng.
+- AI tạo bài tập chỉ tạo draft; giảng viên approve mới publish.
+- Chatbot giảng viên trả lời dựa trên evidence và analytics snapshot.
+- Chatbot sinh viên chỉ truy cập dữ liệu của chính sinh viên đó.
+- Reverse Teaching là assignment type chính thức, không phải demo chat phụ.
+- Guardrail, audit và privacy là yêu cầu MVP, không phải phần bổ sung sau.
 
 ---
 
-## 5. Khuyến nghị tiếp theo
+## 5. Phần có thể mở rộng sau MVP
 
-1. Thêm `security_privacy.md` trước khi lưu dữ liệu code/chat thật.
-2. Thêm `testing_strategy.md` trước khi triển khai AI guardrail.
-3. Thêm `ui_ux_spec.md` khi bắt đầu thiết kế màn hình.
-4. Bổ sung bài báo gốc về Reverse Teaching vào repo hoặc trích dẫn cụ thể để cập nhật thuật ngữ/rubric chính xác hơn.
+Những phần dưới đây không làm MVP thiếu hoàn chỉnh, mà là hướng tăng trưởng:
+
+- Fine-tune model theo dữ liệu thật sau pilot.
+- Thêm ngôn ngữ C/C++/Java với sandbox riêng.
+- Tích hợp LMS như Moodle/Canvas/Google Classroom.
+- Hệ thống khuyến nghị learning path dài hạn.
+- A/B testing các chiến lược scaffolding.
+- Báo cáo cấp khoa/trường thay vì chỉ cấp lớp.

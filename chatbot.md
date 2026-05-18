@@ -109,9 +109,7 @@ AI không được tự publish.
 
 ### 3.1. Khái niệm
 
-Reverse Teaching Exercise là dạng bài tập trong đó sinh viên đóng vai người hướng dẫn. Agent không đưa lời giải mà đặt câu hỏi ngược, giả lập hiểu lầm, hoặc yêu cầu sinh viên prompt/giảng giải để agent hiểu đúng.
-
-Vì chưa có file bài báo trong repo hiện tại, tài liệu này đặc tả theo mô tả yêu cầu: **agent hỏi lại sinh viên, coi sinh viên là trợ giảng, sinh viên prompt/giảng giải lại cho agent**. Khi có bài báo gốc, cần bổ sung citation, thuật ngữ chính xác và rubric nếu bài báo đề xuất.
+Reverse Teaching Exercise là dạng bài tập trong đó sinh viên đóng vai người hướng dẫn. Agent không đưa lời giải mà đặt câu hỏi ngược, giả lập hiểu lầm, hoặc yêu cầu sinh viên prompt/giảng giải để agent hiểu đúng. Trong MVP, đây là một loại assignment chính thức, có session, transcript, rubric score, learning summary và dữ liệu cập nhật vào mastery map.
 
 ### 3.2. Mục tiêu học tập
 

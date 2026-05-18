@@ -55,7 +55,7 @@ Sản phẩm gồm ba bề mặt trải nghiệm chính:
 - Cung cấp AI chatbot cho giảng viên và sinh viên trên web với quyền truy cập dữ liệu phù hợp.
 - Hỗ trợ một dạng bài tập mới: **Reverse Teaching Exercise**, trong đó agent đặt câu hỏi ngược lại, sinh viên đóng vai "trợ giảng" và phải prompt/giảng giải để chứng minh mình hiểu.
 
-### 3.2. Mục tiêu ngoài phạm vi MVP
+### 3.2. Ranh giới sản phẩm MVP
 
 - Không thay thế toàn bộ LMS.
 - Không tự động chấm điểm cuối kỳ có tính pháp lý cao.
@@ -225,19 +225,18 @@ Các chế độ Reverse Teaching:
 
 ---
 
-## 9. Trạng thái hoàn thiện tính năng
+## 9. Định nghĩa MVP hoàn chỉnh
 
-Theo tài liệu hiện có trước bản 1.1.0, dự án **chưa hoàn thiện về mặt yêu cầu sản phẩm**. Các phần đã có gồm ý tưởng AI Mentor, memory, dashboard cơ bản, database ban đầu và fine-tune. Các phần còn thiếu đã được bổ sung trong bộ docs mới:
+MVP 1.0 của CodeMentor AI được định nghĩa là một sản phẩm học lập trình end-to-end, đủ để triển khai pilot cho một lớp học thật. MVP không chỉ gồm chức năng nộp bài và chatbot trong VS Code, mà bao gồm đầy đủ các bề mặt trải nghiệm sau:
 
-- Chatbot web cho giảng viên.
-- Chatbot web cho sinh viên.
-- AI tạo bài tập nháp và luồng approve.
-- Reverse Teaching Exercise.
-- User stories chi tiết.
-- API contract.
-- Roadmap triển khai.
-- Đánh giá mức độ chi tiết và danh sách tài liệu còn thiếu.
-- Thiết kế LangGraph đơn giản hơn, tránh multi-agent quá phức tạp cho MVP.
+- Sinh viên làm bài trong VS Code, nộp bài, nhận AI Mentor khi submission fail.
+- Sinh viên có web dashboard cá nhân để theo dõi tiến độ, điểm mạnh/yếu và được chatbot điều hướng đến bài phù hợp.
+- Giảng viên có web dashboard lớp, dashboard từng sinh viên, chatbot hỏi đáp tình trạng lớp/cá nhân.
+- Giảng viên có AI hỗ trợ tạo bài tập nháp, test case, rubric và chỉ publish sau khi review/approve.
+- Hệ thống có dạng bài Reverse Teaching, trong đó sinh viên đóng vai trợ giảng để giải thích/prompt cho agent.
+- Backend có API contract, database schema, LangGraph workflow, audit log, guardrail, security/privacy, testing và deployment plan.
+
+Một MVP được coi là hoàn chỉnh khi giảng viên có thể tạo lớp, giao bài, theo dõi lớp, hỏi chatbot, tạo bài tập bằng AI; sinh viên có thể nhận bài, nộp code, được mentor hỗ trợ, xem tiến độ cá nhân và hoàn thành bài đảo ngược. Các tính năng sau MVP như fine-tune nâng cao, tối ưu chi phí inference và mở rộng nhiều ngôn ngữ được xem là năng lực tăng trưởng, không phải điều kiện để MVP có giá trị sản phẩm.
 
 ---
 
@@ -253,4 +252,10 @@ Theo tài liệu hiện có trước bản 1.1.0, dự án **chưa hoàn thiện
 | `database.md` | Thiết kế cơ sở dữ liệu cập nhật. |
 | `api_contracts.md` | API contract cho extension, web, chatbot và analytics. |
 | `finetune_gemma.md` | Chiến lược fine-tune/evaluation và cách đưa model vào hệ thống. |
-| `roadmap.md` | Lộ trình MVP, V1 và các rủi ro triển khai. |
+| `mvp_spec.md` | Định nghĩa MVP 1.0 hoàn chỉnh, module, tiêu chí nghiệm thu. |
+| `ui_ux_spec.md` | Thiết kế UI chi tiết cho teacher web, student web, admin web và VS Code extension. |
+| `security_privacy.md` | Threat model, RBAC, privacy, retention và audit. |
+| `testing_strategy.md` | Chiến lược test backend, frontend, extension, judge và AI. |
+| `deployment.md` | Kiến trúc triển khai, môi trường, CI/CD, observability. |
+| `prompt_library.md` | Prompt versioning, prompt lõi và bộ regression cases. |
+| `roadmap.md` | Lộ trình đưa MVP 1.0 ra pilot và các bước mở rộng sau MVP. |
